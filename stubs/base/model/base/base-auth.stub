@@ -1,0 +1,18 @@
+<?php
+
+namespace {{namespace}}Models\Base;
+
+use {{ rootNamespace }}Traits\AuthTraits;
+
+use Illuminate\Contracts\Auth\{
+    Access\Authorizable as AuthorizableContract,
+    Authenticatable as AuthenticatableContract,
+    CanResetPassword as CanResetPasswordContract
+};
+use Illuminate\Foundation\Auth\User;
+use {{ rootNamespace }}Traits\Notifiable;
+
+class BaseAuth extends BaseModel implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
+{
+    use Notifiable, AuthTraits;
+}

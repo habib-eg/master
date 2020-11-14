@@ -1,0 +1,33 @@
+<?php
+
+
+namespace {{namespace}}Traits;
+
+
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Foundation\Auth\Access\Authorizable;
+
+trait AuthTraits
+{
+    use Authenticatable, Authorizable, CanResetPassword, MustVerifyEmail,HashPasswordTraits;
+
+    public function initializeAuthTraits()
+    {
+        $this->fillable = array_merge($this->fillable,[
+            'name',
+            'email',
+            'password',
+        ]);
+
+        $this->hidden = array_merge($this->hidden,[
+            'password',
+            'remember_token',
+        ]);
+
+        $this->casts = array_merge($this->casts,[
+            'email_verified_at' => 'datetime',
+        ]);
+    }
+}

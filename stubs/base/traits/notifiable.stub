@@ -1,0 +1,25 @@
+<?php
+
+
+namespace {{namespace}}Traits;
+
+
+use {{namespace}}Models\Notification;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Notifications\HasDatabaseNotifications;
+use Illuminate\Notifications\RoutesNotifications;
+
+trait Notifiable
+{
+    use HasDatabaseNotifications, RoutesNotifications;
+    /**
+     * Get the entity's notifications.
+     *
+     * @return MorphMany
+     */
+    public function notifications()
+    {
+        return $this->morphMany(Notification::class, 'notifiable')->orderBy('created_at', 'desc');
+    }
+
+}

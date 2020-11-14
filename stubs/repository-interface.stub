@@ -1,0 +1,15 @@
+<?php
+namespace DummyNamespace;
+
+use {{rootNamespace}}Repository\Base\BaseRepository;
+
+/**
+ * Class  {{ class }}
+ * @package DummyNamespace
+ * @property-read BaseRepository
+ */
+interface {{ class }}
+{
+
+
+}

@@ -1,0 +1,8 @@
+<?php
+namespace {{namespace}}Models;
+use Illuminate\Notifications\DatabaseNotification;
+
+class Notification extends DatabaseNotification
+{
+
+}

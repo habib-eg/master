@@ -1,0 +1,33 @@
+{
+    "name": "habib/master",
+    "description": "master setting",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Habib",
+            "email": "mohamedmosaadhabib@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "require-dev": {
+        "orchestra/testbench": "^6.0",
+        "phpunit/phpunit": "^9.3.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Habib\\Master\\": "./src",
+            "Habib\\Master\\Tests\\": "./tests"
+        },
+        "files": []
+    },
+
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Habib\\Master\\Providers\\MasterServiceProvider"
+            ]
+        }
+    }
+}

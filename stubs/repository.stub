@@ -1,0 +1,67 @@
+<?php
+namespace DummyNamespace;
+
+use {{ rootNamespace }}Repository\Base\BaseRepository;
+use {{ rootNamespace }}Events\{{name}}\{{name}}CreateEvent;
+use {{ rootNamespace }}Events\{{name}}\{{name}}DeleteEvent;
+use {{ rootNamespace }}Events\{{name}}\{{name}}UpdateEvent;
+use {{ rootNamespace }}Http\Resources\{{name}}\{{name}}Collection;
+use {{ rootNamespace }}Http\Resources\{{name}}\{{name}}Resource;
+use {{ rootNamespace }}Models\{{name}};
+
+use Illuminate\Database\Eloquent\Model;
+/**
+ * Class  {{ class }}
+ * @package DummyNamespace
+ * @property-read BaseRepository
+ */
+class {{ class }} extends BaseRepository  implements {{ class }}Interface
+{
+   public function __construct({{name}} $model)
+    {
+        parent::__construct($model);
+    }
+
+    /**
+     * @param $all
+     * @return {{name}}Collection|mixed
+     */
+    public function collectionModel($all)
+    {
+        return new {{name}}Collection($all);
+    }
+
+    /**
+     * @param Model $model
+     * @return {{name}}Resource|Model
+     */
+    public function resourceModel(Model $model)
+    {
+        return new {{name}}Resource($model);
+    }
+
+    /**
+     * @param Model $model
+     */
+    protected function eventCreate(Model $model)
+    {
+        event({{name}}CreateEvent::class);
+    }
+
+    /**
+     * @param Model $model
+     */
+    protected function eventUpdate(Model $model)
+    {
+        event({{name}}UpdateEvent::class);
+    }
+
+    /**
+     * @param Model $model
+     */
+    protected function eventDelete(Model $model)
+    {
+        event({{name}}DeleteEvent::class);
+    }
+
+}

@@ -1,0 +1,11 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{rootNamespace}}Models\Base\BaseModel;
+
+class {{ class }} extends BaseModel
+{
+
+
+}
