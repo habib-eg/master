@@ -19,7 +19,7 @@ class MakeAllConsole extends Command
         $this->call(ModelMakeCommand::class, [
             "name" => $name,
             "-a" => true,
-            "-p"=>$this->option('pivot')
+            "-p"=>$this->hasOption('pivot')
         ]);
 
         $this->createRequest(ucfirst($name) . "/{$name}Request", ucfirst($name));
@@ -161,16 +161,10 @@ class MakeAllConsole extends Command
         $upperCaseName = ucfirst($name);
 
         $lowerCaseName = strtolower($name);
-
-        $this->createNotification($upperCaseName . "/{$name}CreateNotification", "mail." . strtolower($name) . ".create", $upperCaseName);
-
-        $this->createNotification($upperCaseName . "/{$name}UpdateNotification", "mail." . $lowerCaseName . ".update", $upperCaseName);
-
-        $this->createNotification($upperCaseName . "/{$name}DeleteNotification", "mail." . $lowerCaseName . ".delete", $upperCaseName);
-
-        $this->createNotification($upperCaseName . "/{$name}RestoredNotification", "mail." . $lowerCaseName . ".restored", $upperCaseName);
-
-        $this->createNotification($upperCaseName . "/{$name}ForceDeletedNotification", "mail." . $lowerCaseName . ".forceDeleted", $upperCaseName);
+        foreach ([ 'create', 'update', 'delete', 'restored', 'forceDeleted', ] as $item) {
+            $upper=ucfirst($item);
+            $this->createNotification($upperCaseName . "/{$name}{$upper}Notification", "mail." . strtolower($name) . ".{$item}", $upperCaseName);
+        }
     }
 
     public function createNotification($fullName, $markdown, $model)
