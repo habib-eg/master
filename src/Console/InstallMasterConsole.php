@@ -55,7 +55,7 @@ class InstallMasterConsole extends Command
             $this->makeDirectory($folder . "/{$name}");
             try {
                 $this->publishFile( $folder."/{$name}", $path . "/{$fileName}",str_replace('.php','',$name));
-            } catch (FileNotFoundException $e) {
+            } catch (\Exception $e) {
                 $this->error($e->getMessage());
             }
         }
