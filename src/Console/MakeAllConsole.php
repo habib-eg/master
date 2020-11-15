@@ -4,6 +4,7 @@ namespace Habib\Master\Console;
 
 use Exception;
 use Illuminate\Console\Command;
+use Symfony\Component\Console\Input\InputOption;
 
 class MakeAllConsole extends Command
 {
@@ -17,7 +18,8 @@ class MakeAllConsole extends Command
 
         $this->call(ModelMakeCommand::class, [
             "name" => $name,
-            "-a" => true
+            "-a" => true,
+            "-p"=>$this->option('pivot')
         ]);
 
         $this->createRequest(ucfirst($name) . "/{$name}Request", ucfirst($name));
@@ -193,5 +195,12 @@ class MakeAllConsole extends Command
             "--model" => ucfirst($name),
             "-u" => true
         ]);
+    }
+    protected function getOptions()
+    {
+        return [
+            ['pivot', 'p', InputOption::VALUE_NONE, 'Indicates if the generated model should be a custom intermediate table model'],
+
+        ];
     }
 }

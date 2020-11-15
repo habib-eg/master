@@ -89,7 +89,7 @@ class ModelMakeCommand extends GeneratorCommand
         ]));
 
         $this->call(ControllerMakeCommand::class, array_filter([
-            'name'  => "{$controller}/{$controller}ApiController",
+            'name'  => "Api/{$controller}/{$controller}Controller",
             '--model' => $this->option('resource') || $this->option('api') ? $modelName : null,
             '--api' => true,
         ]));
