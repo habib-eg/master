@@ -1,9 +1,13 @@
 <?php
+
 namespace Habib\Master\Console;
 
+use File;
 use Habib\Master\Providers\MasterServiceProvider;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
+use Str;
 
 class InstallMasterConsole extends Command
 {
@@ -12,7 +16,7 @@ class InstallMasterConsole extends Command
     protected $signature = 'master:install';
 
     protected $description = 'Install the Master';
-    protected $type="Master";
+    protected $type = "Master";
     /**
      * @var Filesystem
      */
@@ -30,79 +34,76 @@ class InstallMasterConsole extends Command
 
         $this->info('Publishing configuration...');
 
-        $this->call('vendor:publish', [
-            '--provider' => MasterServiceProvider::class,
-//            '--tag' => "config"
-        ]);
-        $path =dirname(dirname(__DIR__)).'/stubs/base';
+//        $this->call('vendor:publish', [
+//            '--provider' => MasterServiceProvider::class,
+////            '--tag' => "config"
+//        ]);
 
-        $this->publishFiles(\File::files($c = $path.'/controller/base'),$c,app_path('Http/Controllers/Base'));
-        $this->publishFiles(\File::files($m =$path.'/model/base'),$m,app_path('Models/Base'));
-        $this->publishFiles(\File::files($m =$path.'/repository/base'),$m,app_path('Repository/Base'));
-        $this->publishFiles(\File::files($m =$path.'/model'),$m,app_path('Models'));
-        $this->publishFiles(\File::files($m =$path.'/traits'),$m,app_path('Traits'));
+        $this->publishFiles(File::files($c = $this->resolveStubPath('/controller/base')), $c, app_path('Http/Controllers/Base'));
+        $this->publishFiles(File::files($m = $this->resolveStubPath('/model/base')), $m, app_path('Models/Base'));
+        $this->publishFiles(File::files($m = $this->resolveStubPath('/repository/base')), $m, app_path('Repository/Base'));
+        $this->publishFiles(File::files($m = $this->resolveStubPath('/model')), $m, app_path('Models'));
+        $this->publishFiles(File::files($m = $this->resolveStubPath('/traits')), $m, app_path('Traits'));
         $this->info('Installed Master');
     }
 
-    public function publishFiles($files,$path,$folder)
+    public function publishFiles($files, $path, $folder)
     {
         foreach ($files as $file) {
             $fileName = $file->getRelativePathname();
-            $name = str_replace('.stub','.php',ucfirst(\Str::camel($file->getRelativePathname())));
-            $this->makeDirectory($folder."/{$name}");
-            $this->publishFile($name,$folder,$path."/{$fileName}");
+            $name = str_replace('.stub', '.php', ucfirst(Str::camel($file->getRelativePathname())));
+            $this->makeDirectory($folder . "/{$name}");
+            try {
+                $this->publishFile( $folder."/{$name}", $path . "/{$fileName}",str_replace('.php','',$name));
+            } catch (FileNotFoundException $e) {
+                $this->error($e->getMessage());
+            }
         }
     }
 
     /**
+     * Build the directory for the class if necessary.
+     *
+     * @param string $path
      * @return string
      */
-    protected function getStub()
+    protected function makeDirectory($path)
     {
-        return  "";
+        if (!$this->files->isDirectory(dirname($path))) {
+            $this->files->makeDirectory(dirname($path), 0777, true, true);
+        }
+
+        return $path;
     }
+
     /**
      * Execute the console command.
      *
+     * @param $fileFullPath
+     * @param string $stub
+     * @param string $type
      * @return bool|null
      *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
-    public function publishFile($name,string $path,string $stub)
+    public function publishFile($fileFullPath, string $stub,string $type="file")
     {
 
         // Next, We will check to see if the class already exists. If it does, we don't want
         // to create the class and overwrite the user's code. So, we will bail out so the
         // code is untouched. Otherwise, we will continue generating this class' files.
-        if ((! $this->hasOption('force') ||
-                ! $this->option('force')) &&
-            \File::exists($path.'/'.$name)) {
-            $this->error($name.' already exists!');
+        if ((!$this->hasOption('force') ||
+                !$this->option('force')) &&
+            File::exists($fileFullPath)) {
+            $this->error($type . ' already exists!');
 
             return false;
         }
 
-        $this->makeDirectory($path);
+        $this->makeDirectory($fileFullPath);
 
-        $this->compileStub($path."/{$name}",$stub);
+        $this->compileStub($fileFullPath, $stub);
 
-        $this->info($name.' created successfully.');
-    }
-
-
-    /**
-     * Build the class with the given name.
-     *
-     * @param  string  $name
-     * @return string
-     *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     */
-    protected function buildMasterClass($name,$path)
-    {
-        $stub = $this->files->get($path);
-
-        return $this->replaceNamespace($stub, $name)->replaceClass($stub, $name);
+        $this->info($type . ' created successfully.');
     }
 
     /**
@@ -110,9 +111,9 @@ class InstallMasterConsole extends Command
      *
      * @return string
      */
-    protected function compileStub($fileFullPath,$stubFullPath)
+    protected function compileStub($fileFullPath, $stubFullPath)
     {
-        return file_put_contents($fileFullPath,str_replace(
+        return file_put_contents($fileFullPath, str_replace(
             '{{namespace}}',
             $this->laravel->getNamespace(),
             file_get_contents($stubFullPath)
@@ -122,29 +123,29 @@ class InstallMasterConsole extends Command
     /**
      * Get full view path relative to the application's configured view path.
      *
-     * @param  string  $path
+     * @param string $path
      * @return string
      */
     protected function getViewPath($path)
     {
         return implode(DIRECTORY_SEPARATOR, [
-            config('view.paths')[0] ?? resource_path('views'), $path,
+            config('view.paths',[])[0] ?? resource_path('views'), $path,
         ]);
     }
 
     /**
-     * Build the directory for the class if necessary.
+     * Resolve the fully-qualified path to the stub.
      *
-     * @param  string  $path
+     * @param string $stub
+     * @param $default
      * @return string
      */
-    protected function makeDirectory($path)
+    protected function resolveStubPath($stub,string $default="base_stubs/base")
     {
-        if (! $this->files->isDirectory(dirname($path))) {
-            $this->files->makeDirectory(dirname($path), 0777, true, true);
-        }
-
-        return $path;
+        $default =trim($default,'/');
+        return
+            file_exists($customPath = $this->laravel->basePath("/{$default}/".trim($stub, '/')))
+                ? $customPath
+                : dirname(dirname(__DIR__)) . "/{$default}/".trim($stub,'/');
     }
-
 }

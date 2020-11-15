@@ -9,19 +9,26 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use {{rootNamespace}}Models\{{model}};
 
 class DummyClass
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
+     * @var {{model}}
+     */
+    public ${{ modelVariable }};
+
+    /**
      * Create a new event instance.
-     *
+
+     * @param {{model}} ${{ modelVariable }}
      * @return void
      */
-    public function __construct()
+    public function __construct({{model}} ${{ modelVariable }})
     {
-        //
+        $this->{{ modelVariable }} = ${{ modelVariable }};
     }
 
     /**
@@ -31,6 +38,7 @@ class DummyClass
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('channel-name');
+        return new PrivateChannel('DummyClass');
     }
+
 }

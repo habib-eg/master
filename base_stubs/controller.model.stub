@@ -1,0 +1,170 @@
+<?php
+namespace {{ namespace }};
+
+use {{ namespacedModel }};
+use {{ rootNamespace }}Http\Controllers\Base\BaseController;
+use Illuminate\Http\Request;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use {{ rootNamespace }}Repository\{{ model }}\{{ model }}RepositoryInterface;
+use {{ rootNamespace }}Http\Requests\{{ model }}\{{ model }}Request;
+
+
+class {{ class }} extends BaseController
+{
+    /**
+     * {{ model }}Controller constructor.
+     * @param {{ model }}RepositoryInterface $repository
+     */
+    public function __construct({{ model }}RepositoryInterface $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Application|Factory|View
+     */
+    public function index()
+    {
+        if (\request()->wantsJson() && \request()->has('draw')) {
+            return  $this->datatable();
+        }
+        $prefix = $this->getPrefix();
+
+        $columns = $this->repository->filteredColumns();
+
+        return view($prefix . '{{ modelVariable }}.index', compact('columns'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return Application|Factory|View
+     */
+    public function create()
+    {
+        $prefix = $this->getPrefix();
+
+        return view($prefix . '{{ modelVariable }}.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param {{ model }}Request $request
+     * @return RedirectResponse
+     */
+    public function store({{ model }}Request $request)
+    {
+        $this->repository->create($request->validated());
+
+        if (isset($this->redirect['create'])) {
+            return redirect()->to($this->redirect['create']);
+        }
+
+        return back()->with([
+            "success" => __('main.success_create', ['model' => __('main.{{ modelVariable }}')])
+        ]);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param {{ model }} ${{ modelVariable }}
+     * @return Application|Factory|View
+     */
+    public function show({{ model }} ${{ modelVariable }})
+    {
+        $prefix = $this->getPrefix();
+
+        return view($prefix . '{{ modelVariable }}.show', compact('{{ modelVariable }}'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param {{ model }} ${{ modelVariable }}
+     * @return Application|Factory|View
+     */
+    public function edit({{ model }} ${{ modelVariable }})
+    {
+        $prefix = $this->getPrefix();
+        $edit = true;
+        return view($prefix . '{{ modelVariable }}.show', compact('{{ modelVariable }}', 'edit'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param Request $request
+     * @param {{ model }} ${{ modelVariable }}
+     * @return RedirectResponse
+     */
+    public function update({{ model }}Request $request, {{ model }} ${{ modelVariable }})
+    {
+        $this->repository->update(${{ modelVariable }}, $request->validated());
+
+        if (isset($this->redirect['update'])) {
+            return redirect()->to($this->redirect['update']);
+        }
+
+        return back()->with([
+            "success" => __('main.success_update', ['model' => __('main.{{ modelVariable }}')])
+        ]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param {{ model }} ${{ modelVariable }}
+     * @return RedirectResponse
+     */
+    public function destroy({{ model }} ${{ modelVariable }})
+    {
+        $this->repository->delete(${{ modelVariable }});
+
+        if (isset($this->redirect['delete'])) {
+            return redirect()->to($this->redirect['delete']);
+        }
+
+        return back()->with([
+            "success" => __('main.success_delete', ['model' => __('main.{{ modelVariable }}')])
+        ]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function destroyMany(Request $request)
+    {
+        $validated = $request->validate([
+            "ids" => ['required', 'array']
+        ]);
+
+        $this->repository->deleteMany($validated['ids']);
+
+        if (isset($this->redirect['delete'])) {
+            return redirect()->to($this->redirect['delete']);
+        }
+
+        return back()->with([
+            "success" => __('main.success_delete', ['model' => __('main.{{ modelVariable }}')])
+        ]);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function datatable()
+    {
+        return $this->repository->datatable()->toJson();
+    }
+
+}

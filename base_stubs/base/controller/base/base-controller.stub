@@ -1,0 +1,36 @@
+<?php
+namespace {{namespace}}Http\Controllers\Base;
+
+use {{namespace}}\Repository\Base\BaseRepository;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+
+class BaseController extends \Illuminate\Routing\Controller
+{
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    /**
+     * @var BaseRepository $repository
+     */
+    protected $repository;
+
+    protected $prefix;
+
+    /**
+     * @return mixed
+     */
+    public function getPrefix()
+    {
+        return $this->prefix?$this->prefix.'.':null;
+    }
+
+    /**
+     * @param $prefix
+     * @return $this
+     */
+    public function setPrefix($prefix)
+    {
+        $this->prefix = $prefix;
+        return $this;
+    }
+}

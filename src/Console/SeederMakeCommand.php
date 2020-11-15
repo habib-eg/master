@@ -2,10 +2,11 @@
 
 namespace Habib\Master\Console;
 
-use Illuminate\Routing\Console\MiddlewareMakeCommand as GeneratorCommand;
+use Illuminate\Database\Console\Seeds\SeederMakeCommand as GeneratorCommand;
 
-class MiddlewareMakeCommand extends GeneratorCommand
+class SeederMakeCommand extends GeneratorCommand
 {
+
     /**
      * Get the stub file for the generator.
      *
@@ -13,9 +14,9 @@ class MiddlewareMakeCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return $this->resolveStubPath('/base_stubs/middleware.stub');
+        return $this->resolveStubPath('/base_stubs/seeder.stub');
     }
-    
+
     /**
      * Resolve the fully-qualified path to the stub.
      *
@@ -24,9 +25,10 @@ class MiddlewareMakeCommand extends GeneratorCommand
      */
     protected function resolveStubPath($stub)
     {
-        return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
+        return
+            file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
             ? $customPath
-            : dirname(dirname(__DIR__)).$stub;
+            : dirname(dirname(__DIR__)).'/'.trim($stub,'/');
     }
 
 }

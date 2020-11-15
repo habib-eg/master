@@ -10,6 +10,7 @@ class BaseModel extends Model
     use HasFactory;
 
     protected array $datatableExcept = [];
+
     /**
      * @return array
      */

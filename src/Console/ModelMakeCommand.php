@@ -2,8 +2,6 @@
 
 namespace Habib\Master\Console;
 
-use Illuminate\Database\Console\Factories\FactoryMakeCommand;
-use Illuminate\Database\Console\Seeds\SeederMakeCommand;
 use Illuminate\Foundation\Console\ModelMakeCommand as GeneratorCommand;
 use Illuminate\Support\Str;
 
@@ -18,8 +16,8 @@ class ModelMakeCommand extends GeneratorCommand
     protected function getStub()
     {
         return $this->option('pivot')
-            ? $this->resolveStubPath(dirname(dirname(__DIR__)).'/stubs/model.pivot.stub')
-            : $this->resolveStubPath(dirname(dirname(__DIR__)).'/stubs/model.stub');
+            ? $this->resolveStubPath(dirname(dirname(__DIR__)) . '/base_stubs/model.pivot.stub')
+            : $this->resolveStubPath(dirname(dirname(__DIR__)) . '/base_stubs/model.stub');
     }
 
     /**
@@ -49,11 +47,15 @@ class ModelMakeCommand extends GeneratorCommand
         if ($this->option('pivot')) {
             $table = Str::singular($table);
         }
+        try {
 
-        $this->call('make:migration', [
-            'name' => "create_{$table}_table",
-            '--create' => $table,
-        ]);
+            $this->call('make:migration', [
+                'name' => "create_{$table}_table",
+                '--create' => $table,
+            ]);
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+        }
     }
 
     /**
@@ -84,7 +86,12 @@ class ModelMakeCommand extends GeneratorCommand
         $this->call(ControllerMakeCommand::class, array_filter([
             'name'  => "{$controller}/{$controller}Controller",
             '--model' => $this->option('resource') || $this->option('api') ? $modelName : null,
-            '--api' => $this->option('api'),
+        ]));
+
+        $this->call(ControllerMakeCommand::class, array_filter([
+            'name'  => "{$controller}/{$controller}ApiController",
+            '--model' => $this->option('resource') || $this->option('api') ? $modelName : null,
+            '--api' => true,
         ]));
     }
 

@@ -29,7 +29,6 @@ class MasterServiceProvider extends ServiceProvider
                 $repository
             );
         }
-
     }
 
     /**
@@ -68,6 +67,9 @@ class MasterServiceProvider extends ServiceProvider
             ],
             "assets"=>[
                 $path.'assets'=>public_path('vendor/master/'),
+            ],
+            "base_stubs"=>[
+                $path.'base_stubs'=>base_path('base_stubs')
             ]
         ];
     }

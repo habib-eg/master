@@ -8,17 +8,21 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Log;
+use Yajra\DataTables\DataTableAbstract;
+use Yajra\DataTables\DataTables;
 
 class BaseRepository
 {
     /**
      * @var Model $baseModel
      */
-    public $baseModel;
+    protected $baseModel;
     /**
      * @var Builder $query
      */
-    public $query;
+    protected $query;
+
+    protected $exceptColumns=[];
 
     /**
      * BaseRepository constructor.
@@ -99,12 +103,9 @@ class BaseRepository
      * @param null $field
      * @return bool
      */
-    public function deleteMany(array $array, $field = null)
+    public function deleteMany(array $array, $field = 'id')
     {
-        foreach ($array as $key => $item) {
-            $this->delete($this->baseModel->resolveRouteBinding($key, $field));
-        }
-        return true;
+        return $this->query()->whereIn($field ?? 'id',$array)->delete();
     }
 
     /**
@@ -172,5 +173,31 @@ class BaseRepository
     public function resourceModel(Model $model)
     {
         return $model;
+    }
+
+    /**
+     * @return array
+     */
+    public function columns()
+    {
+        return $this->baseModel->columns();
+    }
+    /**
+     * @return array
+     */
+    public function filteredColumns()
+    {
+        return array_merge(array_filter($this->baseModel->filteredColumns(),function ($column) { return !in_array($column,$this->exceptColumns); }),[
+            'id'
+        ]);
+    }
+
+    /**
+     * @param null $builder
+     * @return DataTableAbstract|DataTables
+     */
+    public function datatable($builder = null)
+    {
+        return datatables($builder instanceof Builder ? $builder : $this->baseModel->select($this->filteredColumns()));
     }
 }
