@@ -128,7 +128,7 @@ class MakeBladeCommand extends GeneratorCommand
 
         $this->files->put($path, $this->sortImports($this->buildClass($name)));
 
-        $this->info($this->type.' created successfully.');
+        $this->info("{$this->type} {$this->option('blade')} created successfully.");
     }
 
 }

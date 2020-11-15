@@ -34,10 +34,10 @@ class InstallMasterConsole extends Command
 
         $this->info('Publishing configuration...');
 
-//        $this->call('vendor:publish', [
-//            '--provider' => MasterServiceProvider::class,
-////            '--tag' => "config"
-//        ]);
+        $this->call('vendor:publish', [
+            '--provider' => MasterServiceProvider::class,
+//            '--tag' => "config"
+        ]);
 
         $this->publishFiles(File::files($c = $this->resolveStubPath('/controller/base')), $c, app_path('Http/Controllers/Base'));
         $this->publishFiles(File::files($m = $this->resolveStubPath('/model/base')), $m, app_path('Models/Base'));
