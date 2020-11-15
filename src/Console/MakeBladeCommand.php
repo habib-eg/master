@@ -78,9 +78,9 @@ class MakeBladeCommand extends GeneratorCommand
      */
     protected function getViewPath($path)
     {
-        $filePath =strtolower(str_replace('\\','/',implode(DIRECTORY_SEPARATOR, [
-            config('view.paths',[])[0] ?? resource_path('views'), $path,
-        ])));
+        $filePath =str_replace('\\','/',implode(DIRECTORY_SEPARATOR, [
+            config('view.paths',[])[0] ?? resource_path('views'), strtolower($path),
+        ]));
         return "{$filePath}.blade.php";
     }
 
