@@ -33,4 +33,13 @@ class BaseController extends \Illuminate\Routing\Controller
         $this->prefix = $prefix;
         return $this;
     }
+
+    /**
+     * @param $class
+     * @return string
+     */
+    public function model_table($class)
+    {
+        return (new $class)->getTable();
+    }
 }

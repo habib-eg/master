@@ -1,11 +1,12 @@
 <?php
 namespace {{namespace}}Models\Base;
 
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BaseModel extends Model
+class BaseModel extends Model implements HasLocalePreference
 {
     use HasFactory;
 
@@ -38,4 +39,15 @@ class BaseModel extends Model
      {
          return datatables( ($query instanceof Builder)? $query : $this->newQuery()  );
      }
+
+    /**
+     * Get the user's preferred locale.
+     *
+     * @return string
+     */
+    public function preferredLocale()
+    {
+        return $this->locale;
+    }
+
 }

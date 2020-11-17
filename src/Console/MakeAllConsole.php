@@ -4,11 +4,10 @@ namespace Habib\Master\Console;
 
 use Exception;
 use Illuminate\Console\Command;
-use Symfony\Component\Console\Input\InputOption;
 
 class MakeAllConsole extends Command
 {
-    protected $signature = 'make:all {name}';
+    protected $signature = 'make:all {name} {--pivot}';
 
     protected $description = 'Install the Master';
 
@@ -19,7 +18,7 @@ class MakeAllConsole extends Command
         $this->call(ModelMakeCommand::class, [
             "name" => $name,
             "-a" => true,
-            "-p"=>$this->hasOption('pivot')
+            "-p"=>$this->hasOption('pivot'),
         ]);
 
         $this->createRequest(ucfirst($name) . "/{$name}Request", ucfirst($name));
@@ -190,11 +189,5 @@ class MakeAllConsole extends Command
             "-u" => true
         ]);
     }
-    protected function getOptions()
-    {
-        return [
-            ['pivot', 'p', InputOption::VALUE_NONE, 'Indicates if the generated model should be a custom intermediate table model'],
 
-        ];
-    }
 }

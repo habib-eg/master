@@ -17,17 +17,17 @@ class MakeRepositoryCommand extends GeneratorCommand
     public function handle()
     {
 //        parent::handle();
-        $this->makeFile($this->getNameInput() . 'Repository');
+        $this->makeFile($repository = $this->getNameInput() . 'Repository');
         $this->type = "RepositoryInterface";
-        $this->makeFile($this->getNameInput() . 'RepositoryInterface', 'buildClassInterface');
+        $this->makeFile($repositoryInterface = $this->getNameInput() . 'RepositoryInterface', 'buildClassInterface');
         if (file_exists($path = config_path('master.php'))) {
             $configData = config('master', []);
             $namespace = 'App\Repository\\' . ucfirst($this->getNameInput()) . '\\';
 
-            $configData['repositories'][$namespace . $this->getNameInput() . 'Interface'] = $namespace . $this->getNameInput();
+            $configData['repositories'][$namespace . $repositoryInterface] = $namespace . $repository;
             $data = var_export($configData, 1);
             File::put($path, "<?php\n return $data ;");
-            $this->info('Config created successfully.');
+            $this->info('Config updated successfully.');
         }
     }
 

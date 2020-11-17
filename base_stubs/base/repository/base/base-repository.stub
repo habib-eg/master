@@ -25,6 +25,24 @@ class BaseRepository
     protected $exceptColumns=[];
 
     /**
+     * @return Builder
+     */
+    public function getQuery(): Builder
+    {
+        return $this->query;
+    }
+
+    /**
+     * @param Builder $query
+     * @return $this
+     */
+    public function setQuery(Builder $query)
+    {
+        $this->query = $query;
+        return $this;
+    }
+
+    /**
      * BaseRepository constructor.
      * @param Model $model
      */
