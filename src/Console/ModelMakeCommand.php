@@ -16,8 +16,8 @@ class ModelMakeCommand extends GeneratorCommand
     protected function getStub()
     {
         return $this->option('pivot')
-            ? $this->resolveStubPath(dirname(dirname(__DIR__)) . '/base_stubs/model.pivot.stub')
-            : $this->resolveStubPath(dirname(dirname(__DIR__)) . '/base_stubs/model.stub');
+            ? $this->resolveStubPath('/base_stubs/model.pivot.stub')
+            : $this->resolveStubPath('/base_stubs/model.stub');
     }
 
     /**
@@ -103,8 +103,55 @@ class ModelMakeCommand extends GeneratorCommand
      */
     protected function resolveStubPath($stub)
     {
-        return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
+        $stub = trim($stub, '/');
+        return file_exists($customPath = $this->laravel->basePath($stub))
             ? $customPath
-            : $stub;
+            : dirname(dirname(__DIR__))."/$stub";
+    }
+
+    /**
+     * Parse the class name and format according to the root namespace.
+     *
+     * @param  string  $name
+     * @return string
+     */
+    protected function qualifyClass($name)
+    {
+        $name = ltrim($name, '\\/');
+
+        $name = str_replace('/', '\\', $name);
+
+        $rootNamespace = $this->rootNamespace();
+
+        if (Str::startsWith($name, $rootNamespace)) {
+            return $name;
+        }
+
+        return $this->qualifyClass(
+            $this->getDefaultNamespace(trim($rootNamespace, '\\')).'\\'.$name
+        );
+    }
+
+    /**
+     * Qualify the given model class base name.
+     *
+     * @param  string  $model
+     * @return string
+     */
+    protected function qualifyModel(string $model)
+    {
+        $model = ltrim($model, '\\/');
+
+        $model = str_replace('/', '\\', $model);
+
+        $rootNamespace = $this->rootNamespace();
+
+        if (Str::startsWith($model, $rootNamespace)) {
+            return $model;
+        }
+
+        return is_dir(app_path('Models'))
+            ? $rootNamespace.'Models\\'.$model
+            : $rootNamespace.$model;
     }
 }
