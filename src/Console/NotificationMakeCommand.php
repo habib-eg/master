@@ -16,8 +16,8 @@ class NotificationMakeCommand extends GeneratorCommand
     protected function getStub()
     {
         return $this->option('markdown')
-            ? dirname(dirname(__DIR__)).'/base_stubs/markdown-notification.stub'
-            : dirname(dirname(__DIR__)).'/base_stubs/notification.stub';
+            ? dirname(dirname(__DIR__)).'/stubs/base_stubs/markdown-notification.stub'
+            : dirname(dirname(__DIR__)).'/stubs/base_stubs/notification.stub';
     }
 
     /**

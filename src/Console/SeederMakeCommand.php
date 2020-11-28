@@ -14,7 +14,7 @@ class SeederMakeCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return $this->resolveStubPath('/base_stubs/seeder.stub');
+        return $this->resolveStubPath('/stubs/base_stubs/seeder.stub');
     }
 
     /**

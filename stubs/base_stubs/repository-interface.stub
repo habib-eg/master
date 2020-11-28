@@ -7,9 +7,6 @@ use {{rootNamespace}}Repository\Base\BaseRepository;
  * Class  {{ class }}
  * @package DummyNamespace
  * @property-read BaseRepository
+ * @see BaseRepository
  */
-interface {{ class }}
-{
-
-
-}
+interface {{ class }}{}

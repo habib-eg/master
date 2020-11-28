@@ -30,8 +30,8 @@ class ResourceMakeCommand extends GeneratorCommand
     protected function getStub()
     {
         return $this->collection()
-            ? $this->resolveStubPath('/base_stubs/resource-collection.stub')
-            : $this->resolveStubPath('/base_stubs/resource.stub');
+            ? $this->resolveStubPath('/stubs/base_stubs/resource-collection.stub')
+            : $this->resolveStubPath('/stubs/base_stubs/resource.stub');
     }
 
     /**

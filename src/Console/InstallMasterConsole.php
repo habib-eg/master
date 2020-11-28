@@ -140,7 +140,7 @@ class InstallMasterConsole extends Command
      * @param $default
      * @return string
      */
-    protected function resolveStubPath($stub,string $default="base_stubs/base")
+    protected function resolveStubPath($stub,string $default="stubs/base_stubs/base")
     {
         $default =trim($default,'/');
         return

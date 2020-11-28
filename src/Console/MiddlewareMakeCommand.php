@@ -13,9 +13,9 @@ class MiddlewareMakeCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return $this->resolveStubPath('/base_stubs/middleware.stub');
+        return $this->resolveStubPath('/stubs/base_stubs/middleware.stub');
     }
-    
+
     /**
      * Resolve the fully-qualified path to the stub.
      *

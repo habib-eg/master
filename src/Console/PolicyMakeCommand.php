@@ -28,8 +28,8 @@ class PolicyMakeCommand extends GeneratorCommand
     protected function getStub()
     {
         return $this->option('model')
-            ? $this->resolveStubPath('/base_stubs/policy.stub')
-            : $this->resolveStubPath('/base_stubs/policy.plain.stub');
+            ? $this->resolveStubPath('/stubs/base_stubs/policy.stub')
+            : $this->resolveStubPath('/stubs/base_stubs/policy.plain.stub');
     }
 
 }

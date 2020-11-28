@@ -37,10 +37,10 @@ class MakeBladeCommand extends GeneratorCommand
     protected function getStub()
     {
         return $this->resolveStubPath([
-          'index'=>'/base_stubs/blade/index.stub',
-          'create'=>'/base_stubs/blade/create.stub',
-          'edit'=>'/base_stubs/blade/edit.stub',
-          'show'=>'/base_stubs/blade/show.stub',
+          'index'=>'/stubs/base_stubs/blade/index.stub',
+          'create'=>'/stubs/base_stubs/blade/create.stub',
+          'edit'=>'/stubs/base_stubs/blade/edit.stub',
+          'show'=>'/stubs/base_stubs/blade/show.stub',
         ][$this->option('blade')]);
     }
     /**

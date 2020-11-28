@@ -14,10 +14,11 @@ use Illuminate\Database\Eloquent\Model;
  * Class  {{ class }}
  * @package DummyNamespace
  * @property-read BaseRepository
+ * @see BaseRepository
  */
 class {{ class }} extends BaseRepository  implements {{ class }}Interface
 {
-   public function __construct({{name}} $model)
+    public function __construct({{name}} $model)
     {
         parent::__construct($model);
     }
@@ -41,27 +42,27 @@ class {{ class }} extends BaseRepository  implements {{ class }}Interface
     }
 
     /**
-     * @param Model $model
+     * @param {{name}} $model
      */
-    protected function eventCreate(Model $model)
+    protected function eventCreate($model)
     {
-        event({{name}}CreateEvent::class);
+        event( new {{name}}CreateEvent($model));
     }
 
     /**
-     * @param Model $model
+     * @param {{name}} $model
      */
-    protected function eventUpdate(Model $model)
+    protected function eventUpdate($model)
     {
-        event({{name}}UpdateEvent::class);
+        event( new {{name}}UpdateEvent($model));
     }
 
     /**
-     * @param Model $model
+     * @param {{name}} $model
      */
-    protected function eventDelete(Model $model)
+    protected function eventDelete($model)
     {
-        event({{name}}DeleteEvent::class);
+        event( new {{name}}DeleteEvent($model));
     }
 
 }

@@ -14,7 +14,7 @@ class EventMakeCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return dirname(dirname(__DIR__)) . '/base_stubs/event.stub';
+        return dirname(dirname(__DIR__)) . '/stubs/base_stubs/event.stub';
     }
 
     /**

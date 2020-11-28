@@ -28,8 +28,8 @@ class ObserverMakeCommand extends GeneratorCommand
     protected function getStub()
     {
         return $this->option('model')
-            ? $this->resolveStubPath('/base_stubs/observer.stub')
-            : $this->resolveStubPath('/base_stubs/observer.plain.stub');
+            ? $this->resolveStubPath('/stubs/base_stubs/observer.stub')
+            : $this->resolveStubPath('/stubs/base_stubs/observer.plain.stub');
     }
 
 }

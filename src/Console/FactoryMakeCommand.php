@@ -13,7 +13,7 @@ class FactoryMakeCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return $this->resolveStubPath('/base_stubs/factory.stub');
+        return $this->resolveStubPath('/stubs/base_stubs/factory.stub');
     }
 
     /**

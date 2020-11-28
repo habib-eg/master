@@ -10,6 +10,8 @@ use Symfony\Component\Console\Input\InputInterface;
 /**
  * Class MakeAllConsole
  * @package Habib\Master\Console
+ * @property-read  Command
+ * @see Command
  */
 class MakeAllConsole extends Command
 {
@@ -33,10 +35,8 @@ class MakeAllConsole extends Command
         $this->call(ModelMakeCommand::class,array_merge( [
             "name" => $name,
         ],$this->option('pivot')?[
-            "-p"=>$this->option('pivot'),
-        ]:[
-
-        ]));
+            "-p"=>$this->hasOption('pivot'),
+        ]:[]));
 
         $this->createFactory();
         $this->createMigration();
@@ -48,7 +48,12 @@ class MakeAllConsole extends Command
         $this->createEventsAndListeners($name);
         $this->createResources($name);
         $this->createNotifications($name);
-        $this->createTest($name);
+        $this->createTest(ucfirst($name).'Create');
+        $this->createTest(ucfirst($name).'Validation');
+        $this->createTest(ucfirst($name).'Show');
+        $this->createTest(ucfirst($name).'All');
+        $this->createTest(ucfirst($name).'Update');
+        $this->createTest(ucfirst($name).'Delete');
 
         foreach (['index','create','edit','show']as $item) {
             $this->createBlade($item,$name,$item);

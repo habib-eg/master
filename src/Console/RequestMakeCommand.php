@@ -28,7 +28,7 @@ class RequestMakeCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return $this->resolveStubPath('/base_stubs/request.stub');
+        return $this->resolveStubPath('/stubs/base_stubs/request.stub');
     }
 
     /**

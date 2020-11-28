@@ -16,8 +16,8 @@ class ModelMakeCommand extends GeneratorCommand
     protected function getStub()
     {
         return $this->option('pivot')
-            ? $this->resolveStubPath('/base_stubs/model.pivot.stub')
-            : $this->resolveStubPath('/base_stubs/model.stub');
+            ? $this->resolveStubPath('/stubs/base_stubs/model.pivot.stub')
+            : $this->resolveStubPath('/stubs/base_stubs/model.stub');
     }
 
     /**

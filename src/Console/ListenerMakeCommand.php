@@ -16,13 +16,13 @@ class ListenerMakeCommand extends GeneratorCommand
     {
         if ($this->option('queued')) {
             return $this->option('event')
-                ? dirname(dirname(__DIR__)).'/base_stubs/listener-queued.stub'
-                : dirname(dirname(__DIR__)).'/base_stubs/listener-queued-duck.stub';
+                ? dirname(dirname(__DIR__)).'/stubs/base_stubs/listener-queued.stub'
+                : dirname(dirname(__DIR__)).'/stubs/base_stubs/listener-queued-duck.stub';
         }
 
         return $this->option('event')
-            ? dirname(dirname(__DIR__)).'/base_stubs/listener.stub'
-            : dirname(dirname(__DIR__)).'/base_stubs/listener-duck.stub';
+            ? dirname(dirname(__DIR__)).'/stubs/base_stubs/listener.stub'
+            : dirname(dirname(__DIR__)).'/stubs/base_stubs/listener-duck.stub';
     }
 
 }

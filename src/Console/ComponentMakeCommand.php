@@ -13,7 +13,7 @@ class ComponentMakeCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return dirname(dirname(__DIR__)).'/base_stubs/view-component.stub';
+        return dirname(dirname(__DIR__)).'/stubs/base_stubs/view-component.stub';
     }
 
 }

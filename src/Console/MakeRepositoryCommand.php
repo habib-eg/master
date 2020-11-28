@@ -89,7 +89,7 @@ class MakeRepositoryCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return $this->resolveStubPath(dirname(dirname(__DIR__)) . '/base_stubs/repository.stub');
+        return $this->resolveStubPath(dirname(dirname(__DIR__)) . '/stubs/base_stubs/repository.stub');
     }
 
     /**
@@ -122,7 +122,7 @@ class MakeRepositoryCommand extends GeneratorCommand
 
     public function getInterfaceStub()
     {
-        return $this->resolveStubPath(dirname(dirname(__DIR__)) . '/base_stubs/repository-interface.stub');
+        return $this->resolveStubPath(dirname(dirname(__DIR__)) . '/stubs/base_stubs/repository-interface.stub');
     }
 
     /**
