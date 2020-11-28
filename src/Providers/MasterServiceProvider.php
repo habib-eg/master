@@ -9,7 +9,9 @@ use Illuminate\Support\ServiceProvider;
 
 class MasterServiceProvider extends ServiceProvider
 {
-
+    /**
+     * @var string[]
+     */
     protected $commands=[
         InstallMasterConsole::class,
         MakeAllConsole::class,
@@ -69,7 +71,7 @@ class MasterServiceProvider extends ServiceProvider
                 $path.'assets'=>public_path('vendor/master/'),
             ],
             "base_stubs"=>[
-                $path.'base_stubs'=>base_path('base_stubs')
+                $path.'stubs/base_stubs'=>base_path('stubs/base_stubs')
             ]
         ];
     }

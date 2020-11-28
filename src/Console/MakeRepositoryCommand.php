@@ -21,13 +21,11 @@ class MakeRepositoryCommand extends GeneratorCommand
         $this->type = "RepositoryInterface";
         $this->makeFile($repositoryInterface = $this->getNameInput() . 'RepositoryInterface', 'buildClassInterface');
         if (file_exists($path = config_path('master.php'))) {
-            $configData = config('master', []);
-            $namespace = 'App\Repository\\' . ucfirst($this->getNameInput()) . '\\';
-
-            $configData['repositories'][$namespace . $repositoryInterface] = $namespace . $repository;
-            $data = var_export($configData, 1);
-            File::put($path, "<?php\n return $data ;");
-            $this->info('Config updated successfully.');
+            $namespace = $this->laravel->getNamespace().'Repository\\' . ucfirst($this->getNameInput()) . '\\';
+            $this->editConfig('master',function ($configData) use ($repository, $repositoryInterface, $namespace) {
+                $configData['repositories'][$namespace . $repositoryInterface] = $namespace . $repository;
+                return $configData;
+            });
         }
     }
 
@@ -56,6 +54,18 @@ class MakeRepositoryCommand extends GeneratorCommand
         $this->files->put($path, $this->sortImports($this->{$buildClass}($name)));
 
         $this->info($this->type . ' created successfully.');
+    }
+
+    /**
+     * @param string $configName
+     * @param \Closure $callback
+     */
+    public function editConfig(string $configName,$callback)
+    {
+        $path = config_path($configName . '.php');
+        $data = var_export($callback(config($configName)), 1);
+        File::put($path, "<?php\n return $data ;");
+        $this->info("Config {$configName} updated successfully.");
     }
 
     /**
@@ -106,6 +116,32 @@ class MakeRepositoryCommand extends GeneratorCommand
     }
 
     /**
+     * Replace the namespace for the given stub.
+     *
+     * @param string $stub
+     * @param string $name
+     * @return $this
+     */
+    protected function replaceNamespace(&$stub, $name)
+    {
+        $searches = [
+            ['DummyNamespace', 'DummyRootNamespace', 'NamespacedDummyUserModel', '{{name}}'],
+            ['{{ namespace }}', '{{ rootNamespace }}', '{{ namespacedUserModel }}', '{{ModelName}}'],
+            ['{{namespace}}', '{{rootNamespace}}', '{{namespacedUserModel}}', '{{ name }}'],
+        ];
+
+        foreach ($searches as $search) {
+            $stub = str_replace(
+                $search,
+                [$this->getNamespace($name), $this->rootNamespace(), $this->userProviderModel(), $this->getNameInput()],
+                $stub,
+            );
+        }
+
+        return $this;
+    }
+
+    /**
      * Build the class with the given name.
      *
      * @param string $name
@@ -123,32 +159,6 @@ class MakeRepositoryCommand extends GeneratorCommand
     public function getInterfaceStub()
     {
         return $this->resolveStubPath(dirname(dirname(__DIR__)) . '/stubs/base_stubs/repository-interface.stub');
-    }
-
-    /**
-     * Replace the namespace for the given stub.
-     *
-     * @param  string  $stub
-     * @param  string  $name
-     * @return $this
-     */
-    protected function replaceNamespace(&$stub, $name)
-    {
-        $searches = [
-            ['DummyNamespace', 'DummyRootNamespace', 'NamespacedDummyUserModel','{{name}}'],
-            ['{{ namespace }}', '{{ rootNamespace }}', '{{ namespacedUserModel }}','{{ModelName}}'],
-            ['{{namespace}}', '{{rootNamespace}}', '{{namespacedUserModel}}','{{ name }}'],
-        ];
-
-        foreach ($searches as $search) {
-            $stub = str_replace(
-                $search,
-                [$this->getNamespace($name), $this->rootNamespace(), $this->userProviderModel(),$this->getNameInput()],
-                $stub,
-            );
-        }
-
-        return $this;
     }
 
 }

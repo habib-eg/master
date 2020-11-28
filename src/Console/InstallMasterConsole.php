@@ -2,10 +2,11 @@
 
 namespace Habib\Master\Console;
 
+use Closure;
+use Exception;
 use File;
 use Habib\Master\Providers\MasterServiceProvider;
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use Str;
 
@@ -40,10 +41,15 @@ class InstallMasterConsole extends Command
         ]);
 
         $this->publishFiles(File::files($c = $this->resolveStubPath('/controller/base')), $c, app_path('Http/Controllers/Base'));
+        $this->publishFiles(File::files($c = $this->resolveStubPath('/request/base')), $c, app_path('Http/Requests/Base'));
         $this->publishFiles(File::files($m = $this->resolveStubPath('/model/base')), $m, app_path('Models/Base'));
         $this->publishFiles(File::files($m = $this->resolveStubPath('/repository/base')), $m, app_path('Repository/Base'));
         $this->publishFiles(File::files($m = $this->resolveStubPath('/model')), $m, app_path('Models'));
         $this->publishFiles(File::files($m = $this->resolveStubPath('/traits')), $m, app_path('Traits'));
+        \Artisan::call('notifications:table');
+        \Artisan::call('vendor:publish',
+            ['--tag'=>"laravel-mail"]
+        );
         $this->info('Installed Master');
     }
 
@@ -54,8 +60,8 @@ class InstallMasterConsole extends Command
             $name = str_replace('.stub', '.php', ucfirst(Str::camel($file->getRelativePathname())));
             $this->makeDirectory($folder . "/{$name}");
             try {
-                $this->publishFile( $folder."/{$name}", $path . "/{$fileName}",str_replace('.php','',$name));
-            } catch (\Exception $e) {
+                $this->publishFile($folder . "/{$name}", $path . "/{$fileName}", str_replace('.php', '', $name));
+            } catch (Exception $e) {
                 $this->error($e->getMessage());
             }
         }
@@ -85,7 +91,7 @@ class InstallMasterConsole extends Command
      * @return bool|null
      *
      */
-    public function publishFile($fileFullPath, string $stub,string $type="file")
+    public function publishFile($fileFullPath, string $stub, string $type = "file")
     {
 
         // Next, We will check to see if the class already exists. If it does, we don't want
@@ -121,6 +127,22 @@ class InstallMasterConsole extends Command
     }
 
     /**
+     * Resolve the fully-qualified path to the stub.
+     *
+     * @param string $stub
+     * @param $default
+     * @return string
+     */
+    protected function resolveStubPath($stub, string $default = "stubs/base_stubs/base")
+    {
+        $default = trim($default, '/');
+        return
+            file_exists($customPath = $this->laravel->basePath("/{$default}/" . trim($stub, '/')))
+                ? $customPath
+                : dirname(dirname(__DIR__)) . "/{$default}/" . trim($stub, '/');
+    }
+
+    /**
      * Get full view path relative to the application's configured view path.
      *
      * @param string $path
@@ -129,23 +151,7 @@ class InstallMasterConsole extends Command
     protected function getViewPath($path)
     {
         return implode(DIRECTORY_SEPARATOR, [
-            config('view.paths',[])[0] ?? resource_path('views'), $path,
+            config('view.paths', [])[0] ?? resource_path('views'), $path,
         ]);
-    }
-
-    /**
-     * Resolve the fully-qualified path to the stub.
-     *
-     * @param string $stub
-     * @param $default
-     * @return string
-     */
-    protected function resolveStubPath($stub,string $default="stubs/base_stubs/base")
-    {
-        $default =trim($default,'/');
-        return
-            file_exists($customPath = $this->laravel->basePath("/{$default}/".trim($stub, '/')))
-                ? $customPath
-                : dirname(dirname(__DIR__)) . "/{$default}/".trim($stub,'/');
     }
 }

@@ -1,4 +1,5 @@
 <?php
 return [
-    "repositories"=>[]
+    "repositories"=>[],
+    "listeners"=>[],
 ];

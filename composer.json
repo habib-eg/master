@@ -23,7 +23,9 @@
             "Habib\\Master\\": "./src",
             "Habib\\Master\\Tests\\": "./tests"
         },
-        "files": []
+        "files": [
+            "./helpers/helper.php"
+        ]
     },
 
     "extra": {

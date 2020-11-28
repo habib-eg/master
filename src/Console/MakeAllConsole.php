@@ -4,6 +4,8 @@ namespace Habib\Master\Console;
 
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -24,10 +26,25 @@ class MakeAllConsole extends Command
      * @var string
      */
     protected $description = 'Install the Master';
+    /**
+     * @var Filesystem
+     */
+    protected $files;
+    /**
+     * @var array
+     */
+    protected $listeners=[];
 
     /**
-     *
+     * MakeAllConsole constructor.
      */
+    public function __construct(Filesystem $files)
+    {
+        parent::__construct();
+
+        $this->files = $files;
+    }
+
     public function handle()
     {
         $name = $this->argument('name');
@@ -38,6 +55,7 @@ class MakeAllConsole extends Command
             "-p"=>$this->hasOption('pivot'),
         ]:[]));
 
+        $this->createEventsAndListeners($name);
         $this->createFactory();
         $this->createMigration();
         $this->createSeeder();
@@ -45,21 +63,21 @@ class MakeAllConsole extends Command
         $this->createRequest(ucfirst($name) . "/{$name}Request", ucfirst($name));
         $this->createObserver(ucfirst($name) . "/{$name}Observer", $name);
         $this->createPolicy(ucfirst($name) . "/{$name}Policy", $name);
-        $this->createEventsAndListeners($name);
         $this->createResources($name);
         $this->createNotifications($name);
-        $this->createTest(ucfirst($name).'Create');
-        $this->createTest(ucfirst($name).'Validation');
-        $this->createTest(ucfirst($name).'Show');
-        $this->createTest(ucfirst($name).'All');
-        $this->createTest(ucfirst($name).'Update');
-        $this->createTest(ucfirst($name).'Delete');
+        $this->createTest(ucfirst($name));
 
         foreach (['index','create','edit','show']as $item) {
             $this->createBlade($item,$name,$item);
         }
 
         $this->call('make:repository', ["name" => $name,]);
+        $this->editConfig('master',function ($configData) {
+            $configData['listeners']=array_merge($configData['listeners']??[],$this->listeners);
+            $namespace = $this->laravel->getNamespace().'Repository\\' . ucfirst($this->argument('name')) . '\\';
+            $configData['repositories'][$namespace . ucfirst($this->argument('name')).'RepositoryInterface'] = $namespace . ucfirst($this->argument('name')).'Repository';
+            return $configData;
+        });
     }
 
     /**
@@ -131,10 +149,12 @@ class MakeAllConsole extends Command
     {
         foreach (['create','update','delete','restored','forceDeleted'] as $item) {
             $item=ucfirst($item);
-            $this->createEvent($createEvent = ucfirst($name) . "/{$name}{$item}Event", $name,);
-
-            $this->createListener(ucfirst($name) . "/{$name}{$item}Listener",
-                $this->laravel->getNamespace() . 'Events\\' . str_replace('/', '\\', $createEvent));
+            $this->createEvent($createEvent = ucfirst($name) . "/{$name}{$item}Event", $name);
+            $this->createListener(
+                $listener =ucfirst($name) . "/{$name}{$item}Listener",
+                $event = $this->laravel->getNamespace() . 'Events\\' . str_replace('/', '\\', $createEvent)
+            );
+            $this->listeners[$this->laravel->getNamespace().'Listeners\\'.str_replace('/','\\',$listener)][]=$event;
         }
     }
 
@@ -145,6 +165,18 @@ class MakeAllConsole extends Command
     public function createEvent($fullName, $model)
     {
         $this->createBase(EventMakeCommand::class, $fullName, $model);
+    }
+
+    /**
+     * @param string $configName
+     * @param \Closure $callback
+     */
+    public function editConfig(string $configName,\Closure $callback)
+    {
+        $path = config_path($configName . '.php');
+        $data = var_export($callback(config($configName)), 1) ?? [];
+        $this->files->put($path, "<?php\n return $data ;");
+        $this->info("Config {$configName} updated successfully.");
     }
 
     /**
@@ -239,13 +271,14 @@ class MakeAllConsole extends Command
      */
     public function createTest($name)
     {
-        $this->createBase(TestMakeCommand::class, ucfirst($name) . 'Test', ucfirst($name));
-
-        $this->call(TestMakeCommand::class, [
-            "name" => ucfirst($name) . 'UnitTest',
-            "--model" => ucfirst($name),
-            "-u" => true
-        ]);
+        foreach (['Create', 'Validation', 'Show', 'All', 'Update', 'Delete'] as $item) {
+            $this->createBase(TestMakeCommand::class, ucfirst($name).'/'.ucfirst($name) . $item . 'Test', ucfirst($name));
+            $this->call(TestMakeCommand::class, [
+                "name" => ucfirst($name).'/'.ucfirst($name). $item  . 'UnitTest',
+                "--model" => ucfirst($name),
+                "-u" => true,
+            ]);
+        }
     }
 
     /**

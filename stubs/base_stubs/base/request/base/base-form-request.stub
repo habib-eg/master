@@ -1,0 +1,38 @@
+<?php
+
+namespace {{namespace}}Http\Requests\Base;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
+
+/**
+ * Class BaseFormRequest
+ * @property-read FormRequest
+ * @see FormRequest
+ */
+class BaseFormRequest extends FormRequest
+{
+
+    /**
+     * @param $file
+     * @param string $folder
+     * @param array $validation
+     * @return mixed
+     */
+    public function uploader($file, string $folder = "", array $validation = []): string
+    {
+        return uploader($file,$folder,$validation);
+    }
+
+
+    public function validated()
+    {
+        $validated = parent::validated();
+        foreach ($validated as $key => $item) {
+            if ( $item instanceof UploadedFile) {
+                $validated[$key]=$this->uploader($item);
+            }
+        }
+        return $validated;
+    }
+}
