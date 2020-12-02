@@ -5,49 +5,9 @@ use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use {{namespace}}Traits\BaseModelTrait;
 
 class BaseModel extends Model implements HasLocalePreference
 {
-    use HasFactory;
-
-    protected array $datatableExcept = [];
-
-    /**
-     * @return array
-     */
-    public function filteredColumns():array
-    {
-        return (array) collect($this->columns())->filter(function ($column) { return ! in_array($column,$this->datatableExcept); })->toArray();
-    }
-
-    /**
-     * @param array|null $columns
-     * @return array
-     */
-    public function columns(array $columns = null): array
-    {
-        $columns = $columns ?? $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
-        return $columns;
-
-    }
-
-     /**
-      * @param null $query
-      * @return mixed
-      */
-     public function datatable($query = null)
-     {
-         return datatables( ($query instanceof Builder)? $query : $this->newQuery()  );
-     }
-
-    /**
-     * Get the user's preferred locale.
-     *
-     * @return string
-     */
-    public function preferredLocale()
-    {
-        return $this->locale;
-    }
-
+    use BaseModelTrait;
 }

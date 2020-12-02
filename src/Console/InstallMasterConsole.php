@@ -47,6 +47,7 @@ class InstallMasterConsole extends Command
         $this->publishFiles(File::files($m = $this->resolveStubPath('/model')), $m, app_path('Models'));
         $this->publishFiles(File::files($m = $this->resolveStubPath('/traits')), $m, app_path('Traits'));
         \Artisan::call('notifications:table');
+
         \Artisan::call('vendor:publish',
             ['--tag'=>"laravel-mail"]
         );
