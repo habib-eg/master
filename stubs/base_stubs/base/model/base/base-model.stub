@@ -10,4 +10,9 @@ use {{namespace}}Traits\BaseModelTrait;
 class BaseModel extends Model implements HasLocalePreference
 {
     use BaseModelTrait;
+    /**
+     * @var array
+     */
+    protected $datatableExcept = [];
+
 }
