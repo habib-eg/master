@@ -3,9 +3,35 @@
 namespace {{ namespace }};
 
 use {{rootNamespace}}Models\Base\BaseModel;
+use {{rootNamespace}}Events\{{ class }}\{
+    RetrievedEvent, CreatingEvent,  CreatedEvent,
+    UpdatingEvent,  UpdatedEvent,   SavingEvent,
+    SavedEvent,     DeletingEvent,  DeletedEvent,
+    RestoringEvent, RestoredEvent,  ReplicatingEvent
+};
 
 class {{ class }} extends BaseModel
 {
 
+
+    /**
+     * The event map for the model.
+     *
+     * @var array
+     */
+    protected $dispatchesEvents = [
+        'retrieved'     => {{ class }}RetrievedEvent::class,
+        'creating'      => {{ class }}CreatingEvent::class,
+        'created'       => {{ class }}CreatedEvent::class,
+        'updating'      => {{ class }}UpdatingEvent::class,
+        'updated'       => {{ class }}UpdatedEvent::class,
+        'saving'        => {{ class }}SavingEvent::class,
+        'saved'         => {{ class }}SavedEvent::class,
+        'deleting'      => {{ class }}DeletingEvent::class,
+        'deleted'       => {{ class }}DeletedEvent::class,
+        'restoring'     => {{ class }}RestoringEvent::class,
+        'restored'      => {{ class }}RestoredEvent::class,
+        'replicating'   => {{ class }}ReplicatingEvent::class
+    ];
 
 }

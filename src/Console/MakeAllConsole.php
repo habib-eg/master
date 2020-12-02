@@ -147,7 +147,7 @@ class MakeAllConsole extends Command
      */
     public function createEventsAndListeners($name)
     {
-        foreach (['create','update','delete','restored','forceDeleted'] as $item) {
+        foreach (['retrieved', 'creating', 'created', 'updating', 'updated', 'saving', 'saved', 'deleting', 'deleted', 'restoring', 'restored', 'replicating','forceDeleted'] as $item) {
             $item=ucfirst($item);
             $this->createEvent($createEvent = ucfirst($name) . "/{$name}{$item}Event", $name);
             $this->createListener(
@@ -242,7 +242,7 @@ class MakeAllConsole extends Command
         $upperCaseName = ucfirst($name);
 
         $lowerCaseName = strtolower($name);
-        foreach ([ 'create', 'update', 'delete', 'restored', 'forceDeleted', ] as $item) {
+        foreach ([ 'retrieved', 'creating', 'created', 'updating', 'updated', 'saving', 'saved', 'deleting', 'deleted', 'restoring', 'restored', 'replicating', 'forceDeleted', ] as $item) {
             $upper=ucfirst($item);
             $this->createNotification($upperCaseName . "/{$name}{$upper}Notification", "mail." . strtolower($name) . ".{$item}", $upperCaseName);
         }
