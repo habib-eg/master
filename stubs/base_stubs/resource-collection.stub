@@ -18,6 +18,8 @@ class {{ class }} extends ResourceCollection
      */
     public function toArray($request)
     {
-        return parent::toArray($request);
+        return [
+            static::$wrap=>$this->collection,
+        ];
     }
 }

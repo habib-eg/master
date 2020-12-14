@@ -341,12 +341,12 @@ class MakeAllConsole extends Command
         $prefix = $this->getPrefixUppercase();
 
         $this->createResource(
-            $upperCaseName . "$prefix/{$name}Resource",
+            "$prefix/$upperCaseName/{$name}Resource",
             $upperCaseName
         );
 
         $this->createResource(
-            $upperCaseName . "$prefix/{$name}Collection",
+            "$prefix/$upperCaseName/{$name}Collection",
             $upperCaseName
         );
 
