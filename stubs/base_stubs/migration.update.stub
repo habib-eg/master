@@ -1,9 +1,11 @@
 <?php
 
+use Illuminate\Database\Schema\Blueprint;
 use {{namespace}}Migrations\MigrationBase;
 
 class {{ class }} extends MigrationBase
 {
+    protected $table = "{{ table }}";
     /**
      * Run the migrations.
      *
@@ -11,7 +13,9 @@ class {{ class }} extends MigrationBase
      */
     public function up()
     {
-        //
+        $this->getSchema()->table($this->table, function (Blueprint $table) {
+            //
+        });
     }
 
     /**
@@ -21,6 +25,8 @@ class {{ class }} extends MigrationBase
      */
     public function down()
     {
-        //
+        $this->getSchema()->table($this->table, function (Blueprint $table) {
+            //
+        });
     }
 }

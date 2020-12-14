@@ -1,18 +1,19 @@
 <?php
-
 namespace {{ namespace }};
 
 use {{rootNamespace}}Models\Base\BaseModel;
-use {{rootNamespace}}Events\{{ class }}\{
-    RetrievedEvent, CreatingEvent,  CreatedEvent,
-    UpdatingEvent,  UpdatedEvent,   SavingEvent,
-    SavedEvent,     DeletingEvent,  DeletedEvent,
-    RestoringEvent, RestoredEvent,  ReplicatingEvent
+
+use {{rootNamespace}}Events{{prefix}}\{{ class }}\{
+    {{ class }}RetrievedEvent, {{ class }}CreatingEvent,  {{ class }}CreatedEvent,
+    {{ class }}UpdatingEvent,  {{ class }}UpdatedEvent,   {{ class }}SavingEvent,
+    {{ class }}SavedEvent,     {{ class }}DeletingEvent,  {{ class }}DeletedEvent,
+    {{ class }}RestoringEvent, {{ class }}RestoredEvent,  {{ class }}ReplicatingEvent
 };
 
 class {{ class }} extends BaseModel
 {
 
+    protected $table="{{tableName}}";
 
     /**
      * The event map for the model.

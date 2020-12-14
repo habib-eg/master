@@ -2,4 +2,6 @@
 return [
     "repositories"=>[],
     "listeners"=>[],
+    "eventNames"=>[],
+    "viewNames"=>[],
 ];

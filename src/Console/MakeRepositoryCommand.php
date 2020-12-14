@@ -5,6 +5,8 @@ namespace Habib\Master\Console;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Console\Input\InputOption;
+use function GuzzleHttp\Psr7\str;
 
 class MakeRepositoryCommand extends GeneratorCommand
 {
@@ -76,7 +78,7 @@ class MakeRepositoryCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace . '\\Repository\\' . ucfirst($this->getNameInput());
+        return "$rootNamespace\\Repository\\{$this->getPrefix()}". ucfirst($this->getNameInput());
     }
 
     /**
@@ -125,15 +127,15 @@ class MakeRepositoryCommand extends GeneratorCommand
     protected function replaceNamespace(&$stub, $name)
     {
         $searches = [
-            ['DummyNamespace', 'DummyRootNamespace', 'NamespacedDummyUserModel', '{{name}}'],
-            ['{{ namespace }}', '{{ rootNamespace }}', '{{ namespacedUserModel }}', '{{ModelName}}'],
-            ['{{namespace}}', '{{rootNamespace}}', '{{namespacedUserModel}}', '{{ name }}'],
+            ['DummyNamespace'   , 'DummyRootNamespace'      , 'NamespacedDummyUserModel'    , '{{name}}'        ,'{{prefix}}'],
+            ['{{ namespace }}'  , '{{ rootNamespace }}'     , '{{ namespacedUserModel }}'   , '{{ModelName}}'   ,'{{prefixName}}'],
+            ['{{namespace}}'    , '{{rootNamespace}}'       , '{{namespacedUserModel}}'     , '{{ name }}'      ,'{{ prefix }}'],
         ];
 
         foreach ($searches as $search) {
             $stub = str_replace(
                 $search,
-                [$this->getNamespace($name), $this->rootNamespace(), $this->userProviderModel(), $this->getNameInput()],
+                [$this->getNamespace($name), $this->rootNamespace(), $this->userProviderModel(), $this->getNameInput(),$this->getPrefix()],
                 $stub,
             );
         }
@@ -156,9 +158,29 @@ class MakeRepositoryCommand extends GeneratorCommand
         return $this->replaceNamespace($stub, $name)->replaceClass($stub, $name);
     }
 
+    /**
+     * @return string
+     */
     public function getInterfaceStub()
     {
         return $this->resolveStubPath(dirname(dirname(__DIR__)) . '/stubs/base_stubs/repository-interface.stub');
     }
 
+    /**
+     * @return string|null
+     */
+    public function getPrefix()
+    {
+        return ($this->hasOption('prefix')) ? '\\'.trim($this->option('prefix'),'\\') : null;
+    }
+
+    /**
+     * @return array|array[]
+     */
+    protected function getOptions()
+    {
+        return [
+            ['prefix', null, InputOption::VALUE_NONE, 'prefix the controller.'],
+        ];
+    }
 }

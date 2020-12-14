@@ -4,11 +4,15 @@ namespace {{ namespace }};
 
 use {{ namespacedModel }};
 use {{ rootNamespace }}Http\Controllers\Base\BaseController;
-use {{ rootNamespace }}Http\Requests\{{ model }}\{{ model }}Request;
-use {{ rootNamespace }}Repository\{{ model }}\{{ model }}RepositoryInterface;
+use {{ rootNamespace }}Http\Requests{{namespacedPrefix}}\{{ model }}\{{ model }}Request;
+use {{ rootNamespace }}Repository{{namespacedPrefix}}\{{ model }}\{{ model }}RepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
+/**
+ * Class {{ class }}
+ * @package {{ namespace }}
+ */
 class {{ class }} extends BaseController
 {
     /**

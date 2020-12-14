@@ -5,6 +5,7 @@ namespace Habib\Master\Providers;
 use Habib\Master\Console\InstallMasterConsole;
 use Habib\Master\Console\MakeAllConsole;
 use Habib\Master\Console\MakeRepositoryCommand;
+use Habib\Master\Migrations\MigrationCreator;
 use Illuminate\Support\ServiceProvider;
 
 class MasterServiceProvider extends ServiceProvider
@@ -25,6 +26,10 @@ class MasterServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->singleton(MigrationCreator::class, function ($app) {
+            return new MigrationCreator($app['files'], $app->basePath('stubs/base_stubs'));
+        });
+
         foreach (config('master.repositories',[]) as $interface => $repository) {
             $this->app->bind(
                 $interface,

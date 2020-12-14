@@ -9,7 +9,7 @@ use Illuminate\Contracts\Auth\{
     Authenticatable as AuthenticatableContract,
     CanResetPassword as CanResetPasswordContract
 };
-use Illuminate\Foundation\Auth\User;
+
 use {{namespace}}Traits\Notifiable;
 
 class BaseAuth extends BaseModel implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract

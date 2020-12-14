@@ -1,0 +1,37 @@
+<?php
+namespace {{namespace}}Migrations;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Schema;
+
+class MigrationBase extends Migration
+{
+    protected $table;
+
+    /**
+     * @return \Illuminate\Database\Schema\Builder
+     */
+    protected function getSchema()
+    {
+        return Schema::connection($this->getConnection());
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        $this->getSchema()->dropIfExists($this->table);
+    }
+
+    /**
+     * Get the migration connection name.
+     *
+     * @return string|null
+     */
+    public function getConnection()
+    {
+        return $this->connection ?? config('database.default','mysql');
+    }
+}

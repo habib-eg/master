@@ -1,11 +1,9 @@
 <?php
 namespace {{namespace}}Models\Base;
 
-use Illuminate\Contracts\Translation\HasLocalePreference;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use {{namespace}}Traits\BaseModelTrait;
+
+use Illuminate\Contracts\Translation\HasLocalePreference;
 
 class BaseModel extends Model implements HasLocalePreference
 {

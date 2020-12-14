@@ -84,12 +84,6 @@ class MakeBladeCommand extends GeneratorCommand
         return "{$filePath}.blade.php";
     }
 
-    public function prefix($view)
-    {
-        $model =strtolower($this->option('model'));
-        return "{$model}/{$view}";
-    }
-
     /**
      * Execute the console command.
      *
@@ -108,7 +102,7 @@ class MakeBladeCommand extends GeneratorCommand
             return false;
         }
 
-        $name = $this->prefix($this->getNameInput());
+        $name = $this->getNameInput();
 
         $path = $this->getViewPath($name);
 
@@ -117,12 +111,11 @@ class MakeBladeCommand extends GeneratorCommand
         // code is untouched. Otherwise, we will continue generating this class' files.
         if ((! $this->hasOption('force') ||
                 ! $this->option('force')) &&
-            $this->alreadyExists($this->getNameInput())) {
-            $this->error($this->type.' already exists!');
+            $this->alreadyExists(trim($name,'/\\'))) {
+            $this->error("{$this->option('blade')} {$this->type} already exists!");
 
             return false;
         }
-
         // Next, we will generate the path to the location where this class' file should get
         // written. Then, we will build the class and make the proper replacements on the
         // stub files so that it gets the correctly formatted namespace and class name.
@@ -133,4 +126,14 @@ class MakeBladeCommand extends GeneratorCommand
         $this->info("{$this->type} {$this->option('blade')} created successfully.");
     }
 
+    /**
+     * Determine if the class already exists.
+     *
+     * @param  string  $rawName
+     * @return bool
+     */
+    protected function alreadyExists($rawName)
+    {
+        return $this->files->exists($this->getViewPath($rawName));
+    }
 }

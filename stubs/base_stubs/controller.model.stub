@@ -9,9 +9,12 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use {{ rootNamespace }}Repository\{{ model }}\{{ model }}RepositoryInterface;
-use {{ rootNamespace }}Http\Requests\{{ model }}\{{ model }}Request;
+use {{ rootNamespace }}Http\Requests{{namespacedPrefix}}\{{ model }}\{{ model }}Request;
 
-
+/**
+ * Class {{ class }}
+ * @package {{ namespace }}
+ */
 class {{ class }} extends BaseController
 {
     /**

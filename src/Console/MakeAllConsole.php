@@ -2,10 +2,10 @@
 
 namespace Habib\Master\Console;
 
+use Closure;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -20,7 +20,7 @@ class MakeAllConsole extends Command
     /**
      * @var string
      */
-    protected $signature = 'make:all {name} {--p|pivot}';
+    protected $signature = 'make:all {name} {--p|pivot} {--f|prefix=}';
 
     /**
      * @var string
@@ -33,7 +33,16 @@ class MakeAllConsole extends Command
     /**
      * @var array
      */
-    protected $listeners=[];
+    protected $listeners = [];
+
+    /**
+     * @var string[]
+     */
+    protected $events = ['retrieved', 'creating', 'created', 'updating', 'updated', 'saving', 'saved', 'deleting', 'deleted', 'restoring', 'restored', 'replicating', 'forceDeleted',];
+
+    protected $views = ['index', 'create', 'edit', 'show'];
+
+    protected $tests = ['Create', 'Validation', 'Show', 'All', 'Update', 'Delete'];
 
     /**
      * MakeAllConsole constructor.
@@ -48,63 +57,82 @@ class MakeAllConsole extends Command
     public function handle()
     {
         $name = $this->argument('name');
-
-        $this->call(ModelMakeCommand::class,array_merge( [
+        $prefix = $this->getPrefixUppercase();
+        $uppercaseName = ucfirst($name);
+        $this->call(ModelMakeCommand::class, array_merge([
             "name" => $name,
-        ],$this->option('pivot')?[
-            "-p"=>$this->hasOption('pivot'),
-        ]:[]));
+        ], array_merge([
+            "--prefix"=>$this->getPrefixUppercase()
+        ],$this->option('pivot') ? [
+            "-p" => $this->hasOption('pivot'),
+        ] : [])));
 
         $this->createEventsAndListeners($name);
         $this->createFactory();
         $this->createMigration();
         $this->createSeeder();
         $this->createController();
-        $this->createRequest(ucfirst($name) . "/{$name}Request", ucfirst($name));
-        $this->createObserver(ucfirst($name) . "/{$name}Observer", $name);
-        $this->createPolicy(ucfirst($name) . "/{$name}Policy", $name);
+        $this->createRequest("$prefix/$uppercaseName/{$name}Request", $name);
+        $this->createObserver("$prefix/$uppercaseName/{$name}Observer", $name);
+        $this->createPolicy("$prefix/$uppercaseName/{$name}Policy", $name);
         $this->createResources($name);
         $this->createNotifications($name);
-        $this->createTest(ucfirst($name));
+        $this->createTest($uppercaseName);
 
-        foreach (['index','create','edit','show']as $item) {
-            $this->createBlade($item,$name,$item);
+        foreach ($this->getViews() as $item) {
+            $this->createBlade($item, $name, $item);
         }
 
-        $this->call('make:repository', ["name" => $name,]);
-        $this->editConfig('master',function ($configData) {
-            $configData['listeners']=array_merge($configData['listeners']??[],$this->listeners);
-            $namespace = $this->laravel->getNamespace().'Repository\\' . ucfirst($this->argument('name')) . '\\';
-            $configData['repositories'][$namespace . ucfirst($this->argument('name')).'RepositoryInterface'] = $namespace . ucfirst($this->argument('name')).'Repository';
+        $this->call('make:repository', ["name" => "$name","--prefix"=>$prefix]);
+
+        $this->editConfig('master', function (&$configData) {
+            $configData['listeners'] = array_merge($configData['listeners'] ?? [], $this->listeners);
+            $namespace = $this->laravel->getNamespace() . 'Repository\\' . ucfirst($this->argument('name')) . '\\';
+            $configData['repositories'][$namespace . ucfirst($this->argument('name')) . 'RepositoryInterface'] = $namespace . ucfirst($this->argument('name')) . 'Repository';
             return $configData;
         });
     }
 
+    public function getPrefixUppercase()
+    {
+        if ($this->hasOption('prefix')) {
+            return ucfirst($this->getPrefix());
+        }
+        return null;
+    }
+
     /**
      * @param $name
-     * @param $model
-     * @param $blade
      */
-    public function createBlade($name, $model, $blade)
+    public function createEventsAndListeners($name)
     {
-        try {
-            $this->call(MakeBladeCommand::class,[
-                "name"=>$name,
-                "--model"=>$model,
-                "--blade"=>$blade
-            ]);
-        } catch (Exception $exception) {
-            $this->error($exception->getMessage());
+        $prefix = $this->getPrefixUppercase();
+        $prefixNamespace = empty($prefix) ? null : "\\$prefix";
+        $upperCaseName = ucfirst($name);
+        $lowerCaseName = strtolower($name);
+        foreach ($this->getEvents() as $item) {
+            $item = ucfirst($item);
+            $this->createEvent("$prefix/" . $event = ucfirst($name) . "/{$name}{$item}Event", $name);
+            $this->createListener(
+                $listener = "$prefix/$upperCaseName/{$name}{$item}Listener",
+                $event = $this->laravel->getNamespace() . "Events$prefixNamespace\\" . str_replace('/', '\\', $event)
+            );
+            $this->listeners[$this->laravel->getNamespace() . "Listeners$prefixNamespace\\" . str_replace('/', '\\', $listener)][] = $event;
         }
+    }
+
+    public function getEvents()
+    {
+        return array_merge($this->events, config('master.eventNames', []));
     }
 
     /**
      * @param $fullName
      * @param $model
      */
-    public function createRequest($fullName, $model)
+    public function createEvent($fullName, $model)
     {
-        $this->createBase(RequestMakeCommand::class, $fullName, $model);
+        $this->createBase(EventMakeCommand::class, $fullName, $model);
     }
 
     /**
@@ -126,61 +154,6 @@ class MakeAllConsole extends Command
 
     /**
      * @param $fullName
-     * @param $model
-     */
-    public function createObserver($fullName, $model)
-    {
-        $this->createBase(ObserverMakeCommand::class, $fullName, $model);
-    }
-
-    /**
-     * @param $fullName
-     * @param $model
-     */
-    public function createPolicy($fullName, $model)
-    {
-        $this->createBase(PolicyMakeCommand::class, $fullName, $model);
-    }
-
-    /**
-     * @param $name
-     */
-    public function createEventsAndListeners($name)
-    {
-        foreach (['retrieved', 'creating', 'created', 'updating', 'updated', 'saving', 'saved', 'deleting', 'deleted', 'restoring', 'restored', 'replicating','forceDeleted'] as $item) {
-            $item=ucfirst($item);
-            $this->createEvent($createEvent = ucfirst($name) . "/{$name}{$item}Event", $name);
-            $this->createListener(
-                $listener =ucfirst($name) . "/{$name}{$item}Listener",
-                $event = $this->laravel->getNamespace() . 'Events\\' . str_replace('/', '\\', $createEvent)
-            );
-            $this->listeners[$this->laravel->getNamespace().'Listeners\\'.str_replace('/','\\',$listener)][]=$event;
-        }
-    }
-
-    /**
-     * @param $fullName
-     * @param $model
-     */
-    public function createEvent($fullName, $model)
-    {
-        $this->createBase(EventMakeCommand::class, $fullName, $model);
-    }
-
-    /**
-     * @param string $configName
-     * @param \Closure $callback
-     */
-    public function editConfig(string $configName,\Closure $callback)
-    {
-        $path = config_path($configName . '.php');
-        $data = var_export($callback(config($configName)), 1) ?? [];
-        $this->files->put($path, "<?php\n return $data ;");
-        $this->info("Config {$configName} updated successfully.");
-    }
-
-    /**
-     * @param $fullName
      * @param $event
      */
     public function createListener($fullName, $event)
@@ -194,91 +167,6 @@ class MakeAllConsole extends Command
             $this->error($exception->getMessage());
         }
 
-    }
-
-    /**
-     * @param $name
-     */
-    public function createResources($name)
-    {
-        $upperCaseName = ucfirst($name);
-        $lowerCaseName = strtolower($name);
-
-        $this->createResource(
-            $upperCaseName . "/{$name}Resource",
-            $upperCaseName
-        );
-
-        $this->createResource(
-            $upperCaseName . "/{$name}Collection",
-            $upperCaseName
-        );
-
-    }
-
-    /**
-     * @param $fullName
-     * @param $model
-     */
-    public function createResource($fullName, $model)
-    {
-
-        try {
-            $this->call(ResourceMakeCommand::class, [
-                "name" => $fullName,
-                "--model" => $model
-            ]);
-        } catch (Exception $exception) {
-            $this->error($exception->getMessage());
-        }
-
-    }
-
-    /**
-     * @param $name
-     */
-    public function createNotifications($name)
-    {
-        $upperCaseName = ucfirst($name);
-
-        $lowerCaseName = strtolower($name);
-        foreach ([ 'retrieved', 'creating', 'created', 'updating', 'updated', 'saving', 'saved', 'deleting', 'deleted', 'restoring', 'restored', 'replicating', 'forceDeleted', ] as $item) {
-            $upper=ucfirst($item);
-            $this->createNotification($upperCaseName . "/{$name}{$upper}Notification", "mail." . strtolower($name) . ".{$item}", $upperCaseName);
-        }
-    }
-
-    /**
-     * @param $fullName
-     * @param $markdown
-     * @param $model
-     */
-    public function createNotification($fullName, $markdown, $model)
-    {
-        try {
-            $this->call(NotificationMakeCommand::class, [
-                "name" => $fullName,
-                "--markdown" => $markdown,
-                "--model" => $model
-            ]);
-        } catch (Exception $exception) {
-            $this->error($exception->getMessage());
-        }
-    }
-
-    /**
-     * @param $name
-     */
-    public function createTest($name)
-    {
-        foreach (['Create', 'Validation', 'Show', 'All', 'Update', 'Delete'] as $item) {
-            $this->createBase(TestMakeCommand::class, ucfirst($name).'/'.ucfirst($name) . $item . 'Test', ucfirst($name));
-            $this->call(TestMakeCommand::class, [
-                "name" => ucfirst($name).'/'.ucfirst($name). $item  . 'UnitTest',
-                "--model" => ucfirst($name),
-                "-u" => true,
-            ]);
-        }
     }
 
     /**
@@ -297,6 +185,61 @@ class MakeAllConsole extends Command
     }
 
     /**
+     * Parse the class name and format according to the root namespace.
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function qualifyClass($name)
+    {
+        $name = ltrim($name, '\\/');
+
+        $name = str_replace('/', '\\', $name);
+
+        $rootNamespace = $this->rootNamespace();
+
+        if (Str::startsWith($name, $rootNamespace)) {
+            return $name;
+        }
+
+        return $this->qualifyClass(
+            $this->getDefaultNamespace(trim($rootNamespace, '\\')) . '\\' . $name
+        );
+    }
+
+    /**
+     * Get the root namespace for the class.
+     *
+     * @return string
+     */
+    protected function rootNamespace()
+    {
+        return $this->laravel->getNamespace();
+    }
+
+    /**
+     * Get the default namespace for the class.
+     *
+     * @param string $rootNamespace
+     * @return string
+     */
+    protected function getDefaultNamespace($rootNamespace)
+    {
+        return is_dir(app_path('Models')) ? $rootNamespace . '\\Models' : $rootNamespace;
+
+    }
+
+    /**
+     * Get the desired class name from the input.
+     *
+     * @return string
+     */
+    protected function getNameInput()
+    {
+        return trim($this->argument('name'));
+    }
+
+    /**
      * Create a migration file for the model.
      *
      * @return void
@@ -310,11 +253,11 @@ class MakeAllConsole extends Command
         }
         try {
 
-            $this->call('make:migration', [
+            $this->call(MigrateMakeCommand::class, [
                 'name' => "create_{$table}_table",
                 '--create' => $table,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error($e->getMessage());
         }
     }
@@ -344,59 +287,232 @@ class MakeAllConsole extends Command
 
         $modelName = $this->qualifyClass($this->getNameInput());
 
+        $prefix = $this->getPrefixUppercase();
+
         $this->call(ControllerMakeCommand::class, array_filter([
-            'name'  => "{$controller}/{$controller}Controller",
-            '--model' => $modelName ,
+            'name' => "$prefix/{$controller}/{$controller}Controller",
+            '--model' => $modelName,
+            '--prefix' => $prefix,
         ]));
 
         $this->call(ControllerMakeCommand::class, array_filter([
-            'name'  => "Api/{$controller}/{$controller}Controller",
+            'name' => str_replace('//','/',"/Api/$prefix/{$controller}/{$controller}Controller"),
             '--model' => $modelName,
             '--api' => true,
+            '--prefix' => $prefix,
         ]));
 
     }
 
     /**
+     * @param $fullName
+     * @param $model
+     */
+    public function createRequest($fullName, $model)
+    {
+        $this->createBase(RequestMakeCommand::class, $fullName, $model);
+    }
+
+    /**
+     * @param $fullName
+     * @param $model
+     */
+    public function createObserver($fullName, $model)
+    {
+        $this->createBase(ObserverMakeCommand::class, $fullName, $model);
+    }
+
+    /**
+     * @param $fullName
+     * @param $model
+     */
+    public function createPolicy($fullName, $model)
+    {
+        $this->createBase(PolicyMakeCommand::class, $fullName, $model);
+    }
+
+    /**
+     * @param $name
+     */
+    public function createResources($name)
+    {
+        $upperCaseName = ucfirst($name);
+        $lowerCaseName = strtolower($name);
+        $prefix = $this->getPrefixUppercase();
+
+        $this->createResource(
+            $upperCaseName . "$prefix/{$name}Resource",
+            $upperCaseName
+        );
+
+        $this->createResource(
+            $upperCaseName . "$prefix/{$name}Collection",
+            $upperCaseName
+        );
+
+    }
+
+    /**
+     * @param $fullName
+     * @param $model
+     */
+    public function createResource($fullName, $model)
+    {
+
+        try {
+            $this->call(ResourceMakeCommand::class, [
+                "name" => $fullName,
+                "--model" => $model
+            ]);
+        } catch (Exception $exception) {
+            $this->error($exception->getMessage());
+        }
+
+    }
+
+    /**
+     * @param $name
+     */
+    public function createNotifications($name)
+    {
+        $upperCaseName = ucfirst($name);
+        $lowerCaseName = strtolower($name);
+        $prefix = $this->getPrefixUppercase();
+        foreach (['retrieved', 'creating', 'created', 'updating', 'updated', 'saving', 'saved', 'deleting', 'deleted', 'restoring', 'restored', 'replicating', 'forceDeleted',] as $item) {
+            $upper = ucfirst($item);
+            $this->createNotification("$prefix/$upperCaseName/{$name}{$upper}Notification", "mail." . strtolower($name) . ".{$item}", $upperCaseName);
+        }
+    }
+
+    /**
+     * @param $fullName
+     * @param $markdown
+     * @param $model
+     */
+    public function createNotification($fullName, $markdown, $model)
+    {
+        try {
+            $this->call(NotificationMakeCommand::class, [
+                "name" => $fullName,
+                "--markdown" => $markdown,
+                "--model" => $model
+            ]);
+        } catch (Exception $exception) {
+            $this->error($exception->getMessage());
+        }
+    }
+
+    /**
+     * @param $name
+     */
+    public function createTest($name)
+    {
+        $upperCaseName = ucfirst($name);
+        $lowerCaseName = strtolower($name);
+        $prefix = $this->getPrefixUppercase();
+        foreach ($this->getTests() as $item) {
+            $itemUppercase = ucfirst($item);
+            $this->createBase(TestMakeCommand::class, "$prefix/$upperCaseName/$upperCaseName${itemUppercase}" . 'Test', ucfirst($name));
+            $this->call(TestMakeCommand::class, [
+                "name" => "$prefix/$upperCaseName/${upperCaseName}${itemUppercase}" . 'UnitTest',
+                "--model" => ucfirst($name),
+                "-u" => true,
+            ]);
+        }
+    }
+
+    public function getTests()
+    {
+        return array_merge($this->tests, config('master.testNames', []));
+    }
+
+    public function getViews()
+    {
+        return array_merge($this->views, config('master.viewNames', []));
+    }
+
+    /**
+     * @param $name
+     * @param $model
+     * @param $blade
+     */
+    public function createBlade($name, $model, $blade)
+    {
+        $upperCaseName = ucfirst($model);
+        $lowerCaseName = strtolower($model);
+        $prefix = $this->getPrefixLowercase();
+
+        try {
+            $this->call(MakeBladeCommand::class, [
+                "name" => "$prefix/$lowerCaseName/$name",
+                "--model" => $model,
+                "--blade" => $blade
+            ]);
+        } catch (Exception $exception) {
+            $this->error($exception->getMessage());
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getPrefixLowercase()
+    {
+        if ($this->hasOption('prefix')) {
+            return strtolower($this->getPrefix());
+        }
+        return null;
+    }
+
+    /**
+     * @return array|bool|string|null
+     */
+    public function getPrefix()
+    {
+        if ($this->hasOption('prefix')) {
+            return $this->option('prefix');
+        }
+        return null;
+    }
+
+    /**
+     * @param string $configName
+     * @param Closure $callback
+     */
+    public function editConfig(string $configName, Closure $callback)
+    {
+        $path = config_path($configName . '.php');
+        $config = config($configName);
+        $data = var_export($callback($config), 1) ?? [];
+        $this->files->put($path, "<?php\n return $data ;");
+        $this->info("Config {$configName} updated successfully.");
+    }
+
+    /**
+     * @return InputInterface
+     */
+    public function getInput(): InputInterface
+    {
+        return $this->input;
+    }
+
+    /**
      * Resolve the fully-qualified path to the stub.
      *
-     * @param  string  $stub
+     * @param string $stub
      * @return string
      */
     protected function resolveStubPath($stub)
     {
         return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
             ? $customPath
-            : dirname(dirname(__DIR__))."/$stub";
-    }
-
-    /**
-     * Parse the class name and format according to the root namespace.
-     *
-     * @param  string  $name
-     * @return string
-     */
-    protected function qualifyClass($name)
-    {
-        $name = ltrim($name, '\\/');
-
-        $name = str_replace('/', '\\', $name);
-
-        $rootNamespace = $this->rootNamespace();
-
-        if (Str::startsWith($name, $rootNamespace)) {
-            return $name;
-        }
-
-        return $this->qualifyClass(
-            $this->getDefaultNamespace(trim($rootNamespace, '\\')).'\\'.$name
-        );
+            : dirname(dirname(__DIR__)) . "/$stub";
     }
 
     /**
      * Qualify the given model class base name.
      *
-     * @param  string  $model
+     * @param string $model
      * @return string
      */
     protected function qualifyModel(string $model)
@@ -412,47 +528,8 @@ class MakeAllConsole extends Command
         }
 
         return is_dir(app_path('Models'))
-            ? $rootNamespace.'Models\\'.$model
-            : $rootNamespace.$model;
-    }
-    /**
-     * @return InputInterface
-     */
-    public function getInput(): InputInterface
-    {
-        return $this->input;
-    }
-
-    /**
-     * Get the desired class name from the input.
-     *
-     * @return string
-     */
-    protected function getNameInput()
-    {
-        return trim($this->argument('name'));
-    }
-
-    /**
-     * Get the root namespace for the class.
-     *
-     * @return string
-     */
-    protected function rootNamespace()
-    {
-        return $this->laravel->getNamespace();
-    }
-
-    /**
-     * Get the default namespace for the class.
-     *
-     * @param  string  $rootNamespace
-     * @return string
-     */
-    protected function getDefaultNamespace($rootNamespace)
-    {
-        return is_dir(app_path('Models')) ? $rootNamespace.'\\Models' : $rootNamespace;
-
+            ? $rootNamespace . 'Models\\' . $model
+            : $rootNamespace . $model;
     }
 
 
