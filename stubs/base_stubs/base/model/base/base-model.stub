@@ -4,6 +4,7 @@ namespace {{namespace}}Models\Base;
 use {{namespace}}Traits\BaseModelTrait;
 
 use Illuminate\Contracts\Translation\HasLocalePreference;
+use Illuminate\Database\Eloquent\Model;
 
 class BaseModel extends Model implements HasLocalePreference
 {
