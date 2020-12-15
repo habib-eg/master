@@ -3,6 +3,7 @@
 namespace Habib\Master\Console;
 
 use Illuminate\Foundation\Console\ObserverMakeCommand as GeneratorCommand;
+use Symfony\Component\Console\Input\InputOption;
 
 class ObserverMakeCommand extends GeneratorCommand
 {
@@ -32,4 +33,58 @@ class ObserverMakeCommand extends GeneratorCommand
             : $this->resolveStubPath('/stubs/base_stubs/observer.plain.stub');
     }
 
+    /**
+     * Replace the model for the given stub.
+     *
+     * @param  string  $stub
+     * @param  string  $model
+     * @return string
+     */
+    protected function replaceModel($stub, $model)
+    {
+        $modelClass = $this->parseModel($model);
+
+        $replace = [
+            'DummyFullModelClass' => $modelClass,
+            '{{ namespacedModel }}' => $modelClass,
+            '{{namespacedModel}}' => $modelClass,
+            'DummyModelClass' => class_basename($modelClass),
+            '{{ model }}' => class_basename($modelClass),
+            '{{model}}' => class_basename($modelClass),
+            '{{prefix}}' => $this->getPrefix(),
+            'DummyModelVariable' => lcfirst(class_basename($modelClass)),
+            '{{ modelVariable }}' => lcfirst(class_basename($modelClass)),
+            '{{modelVariable}}' => lcfirst(class_basename($modelClass)),
+        ];
+
+        return str_replace(
+            array_keys($replace), array_values($replace), $stub
+        );
+    }
+
+    public function getPrefix()
+    {
+        return $this->hasOption('prefix') ? "\\"."{$this->option('prefix')}" : null;
+    }
+    /**
+     * Get the default namespace for the class.
+     *
+     * @param  string  $rootNamespace
+     * @return string
+     */
+    protected function getDefaultNamespace($rootNamespace)
+    {
+        return "$rootNamespace\Observers";
+    }
+    /**
+     * Get the console command arguments.
+     *
+     * @return array
+     */
+    protected function getOptions()
+    {
+        return array_merge(parent::getOptions(),[
+            ['prefix', 'p', InputOption::VALUE_OPTIONAL, 'Prefix.'],
+        ]);
+    }
 }

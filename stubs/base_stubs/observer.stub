@@ -3,7 +3,7 @@
 namespace {{ namespace }};
 
 use {{ namespacedModel }};
-use App\Events\{{ model }}\{ {{ model }}CreateEvent, {{ model }}DeleteEvent, {{ model }}ForceDeletedEvent, {{ model }}RestoredEvent, {{ model }}UpdateEvent};
+use App\Events{{prefix}}\{{ model }}\{ {{ model }}CreatedEvent, {{ model }}DeletedEvent, {{ model }}ForceDeletedEvent, {{ model }}RestoredEvent, {{ model }}UpdatedEvent};
 
 class {{ class }}
 {
@@ -15,7 +15,7 @@ class {{ class }}
      */
     public function created({{ model }} ${{ modelVariable }})
     {
-        event(new {{ model }}CreateEvent(${{ modelVariable }}));
+        event(new {{ model }}CreatedEvent(${{ modelVariable }}));
     }
 
     /**
@@ -26,7 +26,7 @@ class {{ class }}
      */
     public function updated({{ model }} ${{ modelVariable }})
     {
-        event(new {{ model }}UpdateEvent(${{ modelVariable }}));
+        event(new {{ model }}UpdatedEvent(${{ modelVariable }}));
     }
 
     /**
@@ -37,7 +37,7 @@ class {{ class }}
      */
     public function deleted({{ model }} ${{ modelVariable }})
     {
-        event(new {{ model }}DeleteEvent(${{ modelVariable }}));
+        event(new {{ model }}DeletedEvent(${{ modelVariable }}));
     }
 
     /**

@@ -2,11 +2,11 @@
 namespace DummyNamespace;
 
 use {{ rootNamespace }}Repository\Base\BaseRepository;
-use {{ rootNamespace }}Events\{{name}}\{{name}}CreateEvent;
-use {{ rootNamespace }}Events\{{name}}\{{name}}DeleteEvent;
-use {{ rootNamespace }}Events\{{name}}\{{name}}UpdateEvent;
-use {{ rootNamespace }}Http\Resources\{{name}}\{{name}}Collection;
-use {{ rootNamespace }}Http\Resources\{{name}}\{{name}}Resource;
+use {{ rootNamespace }}Events{{prefix}}\{{name}}\{{name}}CreatedEvent;
+use {{ rootNamespace }}Events{{prefix}}\{{name}}\{{name}}DeletedEvent;
+use {{ rootNamespace }}Events{{prefix}}\{{name}}\{{name}}UpdatedEvent;
+use {{ rootNamespace }}Http\Resources{{prefix}}\{{name}}\{{name}}Collection;
+use {{ rootNamespace }}Http\Resources{{prefix}}\{{name}}\{{name}}Resource;
 use {{ rootNamespace }}Models\{{name}};
 
 use Illuminate\Database\Eloquent\Model;
@@ -46,7 +46,7 @@ class {{ class }} extends BaseRepository  implements {{ class }}Interface
      */
     protected function eventCreate($model)
     {
-        event( new {{name}}CreateEvent($model));
+        event( new {{name}}CreatedEvent($model));
     }
 
     /**
@@ -54,7 +54,7 @@ class {{ class }} extends BaseRepository  implements {{ class }}Interface
      */
     protected function eventUpdate($model)
     {
-        event( new {{name}}UpdateEvent($model));
+        event( new {{name}}UpdatedEvent($model));
     }
 
     /**
@@ -62,7 +62,7 @@ class {{ class }} extends BaseRepository  implements {{ class }}Interface
      */
     protected function eventDelete($model)
     {
-        event( new {{name}}DeleteEvent($model));
+        event( new {{name}}DeletedEvent($model));
     }
 
 }

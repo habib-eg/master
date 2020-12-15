@@ -27,15 +27,15 @@ class EventMakeCommand extends GeneratorCommand
     protected function replaceNamespace(&$stub, $name)
     {
         $searches = [
-            ['DummyNamespace', 'DummyRootNamespace', 'NamespacedDummyUserModel','EventModel','{{ modelVariable }}'],
-            ['{{ namespace }}', '{{ rootNamespace }}', '{{ namespacedUserModel }}','{{ model }}','{{ modelVariable }}'],
-            ['{{namespace}}', '{{rootNamespace}}', '{{namespacedUserModel}}','{{model}}','{{ modelVariable }}'],
+            ['DummyNamespace', 'DummyRootNamespace', 'NamespacedDummyUserModel','EventModel','{{ modelVariable }}','{{ DummyPrefix }}'],
+            ['{{ namespace }}', '{{ rootNamespace }}', '{{ namespacedUserModel }}','{{ model }}','{{ modelVariable }}','{{ prefix }}'],
+            ['{{namespace}}', '{{rootNamespace}}', '{{namespacedUserModel}}','{{model}}','{{ modelVariable }}','{{prefix}}'],
         ];
 
         foreach ($searches as $search) {
             $stub = str_replace(
                 $search,
-                [$this->getNamespace($name), $this->rootNamespace(), $this->userProviderModel(),$this->option('model'),strtolower($this->option('model'))],
+                [$this->getNamespace($name), $this->rootNamespace(), $this->userProviderModel(),$this->option('model'),strtolower($this->option('model')),$this->getPrefix()],
                 $stub
             );
         }
@@ -43,14 +43,19 @@ class EventMakeCommand extends GeneratorCommand
         return $this;
     }
 
+    public function getPrefix()
+    {
+        return $this->hasOption('prefix') ? "\\"."{$this->option('prefix')}" : null;
+    }
     /**
      * @return array|array[]
      */
     protected function getOptions()
     {
-        return [
+        return array_merge(parent::getOptions(),[
             ['model', 'm', InputOption::VALUE_OPTIONAL, 'Generate a resource controller for the given model.'],
-        ];
+            ['prefix', 'p', InputOption::VALUE_OPTIONAL, 'Prefix.'],
+        ]);
     }
 
 }

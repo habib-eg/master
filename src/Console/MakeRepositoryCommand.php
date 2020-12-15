@@ -19,11 +19,12 @@ class MakeRepositoryCommand extends GeneratorCommand
     public function handle()
     {
 //        parent::handle();
+        $prefix = $this->getPrefix();
         $this->makeFile($repository = $this->getNameInput() . 'Repository');
         $this->type = "RepositoryInterface";
         $this->makeFile($repositoryInterface = $this->getNameInput() . 'RepositoryInterface', 'buildClassInterface');
         if (file_exists($path = config_path('master.php'))) {
-            $namespace = $this->laravel->getNamespace().'Repository\\' . ucfirst($this->getNameInput()) . '\\';
+            $namespace = $this->laravel->getNamespace().'Repository\\$prefix\\' . ucfirst($this->getNameInput()) . '\\';
             $this->editConfig('master',function ($configData) use ($repository, $repositoryInterface, $namespace) {
                 $configData['repositories'][$namespace . $repositoryInterface] = $namespace . $repository;
                 return $configData;
@@ -78,7 +79,7 @@ class MakeRepositoryCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return "$rootNamespace\\Repository\\{$this->getPrefix()}". ucfirst($this->getNameInput());
+        return "$rootNamespace\\Repository{$this->getPrefix()}\\". ucfirst($this->getNameInput());
     }
 
     /**
